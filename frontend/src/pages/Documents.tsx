@@ -167,11 +167,27 @@ export function Documents() {
               ) : (
                 documents.map((doc, idx) => (
                   <tr key={doc.id} className={`border-b border-border hover:bg-gray-50 ${idx === documents.length - 1 ? 'border-b-0' : ''}`}>
-                    <td className="px-6 py-4 border-r border-border font-medium flex items-center gap-2">
-                      <FileText size={16} className="text-blue-600" />
-                      {doc.title}
+                    <td className="px-6 py-4 border-r border-border">
+                      <div className="flex items-start gap-2">
+                        <FileText size={16} className="text-blue-600 mt-1 shrink-0" />
+                        <div>
+                          <p className="font-medium text-gray-900">{doc.title}</p>
+                          {doc.summary && (
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2 max-w-md">{doc.summary}</p>
+                          )}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 border-r border-border">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 border-r border-border">
+                      {doc.type ? (
+                        <span className="px-2 py-1 text-xs font-pixel font-bold bg-blue-100 text-blue-800 border shadow-[1px_1px_0px_0px_#111]">
+                          {doc.type}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">Unknown</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 border-r border-border text-sm">{new Date(doc.createdAt).toLocaleDateString()}</td>
                     <td className="px-6 py-4 border-r border-border">
                       <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-green-100 text-green-800 border-green-800">
                         Ready
