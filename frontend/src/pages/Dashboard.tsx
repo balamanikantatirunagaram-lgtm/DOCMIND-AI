@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Search, Plus, FileText, Users, Activity, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { api } from '../services/api';
 
 // Mock data will be replaced by state
 
@@ -19,7 +20,6 @@ export function Dashboard() {
   React.useEffect(() => {
     async function loadData() {
       try {
-        const { api } = await import('../services/api');
         const [docsRes, chatsRes] = await Promise.all([
           api.get('/documents'),
           api.get('/ai/chats')
@@ -46,7 +46,6 @@ export function Dashboard() {
     formData.append('title', file.name);
 
     try {
-      const { api } = await import('../services/api');
       await api.post('/documents/upload', formData);
       navigate('/chat');
     } catch (error) {
