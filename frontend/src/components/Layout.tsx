@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, MessageSquare, Menu, LogOut, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, MessageSquare, LogOut, ChevronLeft, ChevronRight, Settings, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -8,6 +8,7 @@ export function Layout() {
   const navigate = useNavigate();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [userPayload, setUserPayload] = useState<any>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -82,38 +83,66 @@ export function Layout() {
         </nav>
 
         {/* User Profile */}
-        <div className="border-t-4 border-border p-4 bg-gray-50">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-blue-100 border-2 border-border flex items-center justify-center flex-shrink-0">
-              <User size={20} className="text-blue-600" />
-            </div>
-            {!isSidebarCollapsed && userPayload && (
-              <div className="flex-1 min-w-0 overflow-hidden">
-                <p className="font-pixel text-sm font-bold truncate">{userPayload.name || 'User'}</p>
-                <p className="font-sans text-xs text-gray-500 truncate">{userPayload.email}</p>
-              </div>
-            )}
-            {!isSidebarCollapsed && (
-              <button 
-                onClick={handleLogout} 
-                className="p-2 border-2 border-border hover:bg-gray-200 shadow-[2px_2px_0px_0px_#111] transition-all ml-auto"
-                title="Logout"
-              >
-                <LogOut size={16} />
-              </button>
-            )}
+        <div 
+          onClick={() => setIsSettingsOpen(true)}
+          className="border-t-4 border-border p-4 bg-gray-50 hover:bg-gray-200 cursor-pointer transition-colors flex items-center gap-3"
+          title="Open Settings"
+        >
+          <div className="h-10 w-10 bg-blue-100 border-2 border-border flex items-center justify-center flex-shrink-0">
+            <span className="font-pixel font-bold text-blue-600 text-lg">
+              {userPayload?.name ? userPayload.name.charAt(0).toUpperCase() : 'U'}
+            </span>
           </div>
-          {isSidebarCollapsed && (
-            <button 
-              onClick={handleLogout} 
-              className="mt-4 w-full p-2 border-2 border-border hover:bg-gray-200 flex justify-center shadow-[2px_2px_0px_0px_#111] transition-all"
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
+          {!isSidebarCollapsed && userPayload && (
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <p className="font-pixel text-sm font-bold truncate">{userPayload.name || 'User'}</p>
+              <p className="font-sans text-xs text-gray-500 truncate">{userPayload.email}</p>
+            </div>
           )}
         </div>
       </aside>
+
+      {/* Settings Modal */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-4 border-border w-full max-w-md shadow-[16px_16px_0px_0px_#111]">
+            <div className="flex justify-between items-center p-4 border-b-4 border-border bg-gray-50">
+              <h2 className="font-pixel text-xl font-bold flex items-center gap-2"><Settings size={20} /> Settings</h2>
+              <button 
+                onClick={() => setIsSettingsOpen(false)}
+                className="p-1 hover:bg-gray-200 border-2 border-transparent hover:border-border transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="font-pixel font-bold mb-2">Profile</h3>
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 bg-blue-100 border-4 border-border flex items-center justify-center shadow-[4px_4px_0px_0px_#111]">
+                    <span className="font-pixel font-bold text-blue-600 text-2xl">
+                      {userPayload?.name ? userPayload.name.charAt(0).toUpperCase() : 'U'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-pixel font-bold text-lg">{userPayload?.name || 'User'}</p>
+                    <p className="font-sans text-gray-600">{userPayload?.email}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t-2 border-dashed border-gray-300">
+                <button 
+                  onClick={handleLogout} 
+                  className="w-full flex items-center justify-center gap-2 font-pixel p-3 border-2 border-border bg-red-100 hover:bg-red-200 text-red-700 shadow-[4px_4px_0px_0px_#111] hover:shadow-[2px_2px_0px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  <LogOut size={18} /> Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
