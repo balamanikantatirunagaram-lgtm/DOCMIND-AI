@@ -47,9 +47,7 @@ export function Dashboard() {
 
     try {
       const { api } = await import('../services/api');
-      await api.post('/documents/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/documents/upload', formData);
       navigate('/chat');
     } catch (error) {
       alert('Failed to upload document.');
