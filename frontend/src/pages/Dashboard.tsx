@@ -5,33 +5,30 @@ import { Search, Plus, FileText, Users, Activity, BarChart2 } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { name: 'Mon', documents: 40, aiUsage: 24 },
-  { name: 'Tue', documents: 30, aiUsage: 13 },
-  { name: 'Wed', documents: 20, aiUsage: 98 },
-  { name: 'Thu', documents: 27, aiUsage: 39 },
-  { name: 'Fri', documents: 18, aiUsage: 48 },
-  { name: 'Sat', documents: 23, aiUsage: 38 },
-  { name: 'Sun', documents: 34, aiUsage: 43 },
-];
-
-const stats = [
-  { label: 'Total Documents', value: '1,024', icon: FileText, change: '+12% from last month' },
-  { label: 'Active Users', value: '48', icon: Users, change: '+4 new this week' },
-  { label: 'API Calls', value: '89.2k', icon: Activity, change: '+24% from last week' },
-  { label: 'Storage Used', value: '45.2 GB', icon: BarChart2, change: '12% of total quota' },
-];
-
-const recentDocs = [
-  { id: '1', name: 'Q3_Financial_Report.pdf', type: 'PDF', status: 'Processed' },
-  { id: '2', name: 'Vendor_Contract_Acme.docx', type: 'DOCX', status: 'Pending' },
-  { id: '3', name: 'Employee_Handbook.pdf', type: 'PDF', status: 'Processed' },
-  { id: '4', name: 'Invoice_1024.png', type: 'IMAGE', status: 'Failed' },
-];
+// Mock data will be replaced by state
 
 export function Dashboard() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const [documents, setDocuments] = React.useState<any[]>([]);
+  const [chats, setChats] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    async function loadData() {
+      try {
+        const { api } = await import('../services/api');
+        const [docsRes, chatsRes] = await Promise.all([
+          api.get('/documents'),
+          api.get('/ai/chats')
+        ]);
+        setDocuments(docsRes.data || []);
+        setChats(chatsRes.data || []);
+      } catch (e) {
+        console.error('Failed to load dashboard data', e);
+      }
+    }
+    loadData();
+  }, []);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -55,6 +52,32 @@ export function Dashboard() {
       alert('Failed to upload document.');
     }
   };
+
+  // Generate chart data grouped by day for the last 7 days
+  const chartData = React.useMemo(() => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const data = days.map(name => ({ name, documents: 0, aiUsage: 0 }));
+    
+    documents.forEach(doc => {
+      const d = new Date(doc.createdAt);
+      if (Date.now() - d.getTime() < 7 * 24 * 60 * 60 * 1000) {
+        data[d.getDay()].documents += 1;
+      }
+    });
+
+    chats.forEach(chat => {
+      chat.messages?.forEach((msg: any) => {
+        const d = new Date(msg.createdAt);
+        if (Date.now() - d.getTime() < 7 * 24 * 60 * 60 * 1000) {
+          data[d.getDay()].aiUsage += 1;
+        }
+      });
+    });
+
+    // Reorder array so today is last
+    const today = new Date().getDay();
+    return [...data.slice(today + 1), ...data.slice(0, today + 1)];
+  }, [documents, chats]);
 
   return (
     <div className="space-y-6">
@@ -85,31 +108,29 @@ export function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-pixel text-muted">Total Documents</p>
-              <h3 className="text-3xl font-bold mt-2">1,284</h3>
+              <h3 className="text-3xl font-bold mt-2">{documents.length}</h3>
             </div>
             <div className="p-3 bg-blue-100 border border-border shadow-[2px_2px_0px_0px_#111111]">
               <FileText size={20} className="text-blue-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm text-green-600 font-medium">
-            <ArrowUpRight size={16} className="mr-1" />
-            <span>12% from last week</span>
+            <span>All time</span>
           </div>
         </Card>
 
         <Card className="flex flex-col">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm font-pixel text-muted">AI Queries</p>
-              <h3 className="text-3xl font-bold mt-2">8,593</h3>
+              <p className="text-sm font-pixel text-muted">AI Chats</p>
+              <h3 className="text-3xl font-bold mt-2">{chats.length}</h3>
             </div>
             <div className="p-3 bg-purple-100 border border-border shadow-[2px_2px_0px_0px_#111111]">
-              <Zap size={20} className="text-purple-600" />
+              <Activity size={20} className="text-purple-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm text-green-600 font-medium">
-            <ArrowUpRight size={16} className="mr-1" />
-            <span>24% from last week</span>
+            <span>All time</span>
           </div>
         </Card>
 
@@ -117,33 +138,32 @@ export function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm font-pixel text-muted">Storage Used</p>
-              <h3 className="text-3xl font-bold mt-2">45.2 GB</h3>
+              <h3 className="text-3xl font-bold mt-2">{(documents.length * 0.4).toFixed(1)} MB</h3>
             </div>
             <div className="p-3 bg-orange-100 border border-border shadow-[2px_2px_0px_0px_#111111]">
-              <HardDrive size={20} className="text-orange-600" />
+              <BarChart2 size={20} className="text-orange-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm text-muted font-medium">
-            <span>45% of 100 GB</span>
+            <span>Estimated size</span>
           </div>
           <div className="w-full bg-gray-200 h-2 mt-2 border border-border">
-            <div className="bg-text h-full" style={{ width: '45%' }}></div>
+            <div className="bg-text h-full" style={{ width: `${Math.min(100, documents.length * 2)}%` }}></div>
           </div>
         </Card>
 
         <Card className="flex flex-col">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm font-pixel text-muted">Success Rate</p>
-              <h3 className="text-3xl font-bold mt-2">99.2%</h3>
+              <p className="text-sm font-pixel text-muted">Active Users</p>
+              <h3 className="text-3xl font-bold mt-2">1</h3>
             </div>
             <div className="p-3 bg-green-100 border border-border shadow-[2px_2px_0px_0px_#111111]">
-              <Activity size={20} className="text-green-600" />
+              <Users size={20} className="text-green-600" />
             </div>
           </div>
-          <div className="mt-4 flex items-center text-sm text-red-600 font-medium">
-            <ArrowDownRight size={16} className="mr-1" />
-            <span>0.1% from last week</span>
+          <div className="mt-4 flex items-center text-sm text-green-600 font-medium">
+            <span>Current Session</span>
           </div>
         </Card>
       </div>
@@ -152,11 +172,11 @@ export function Dashboard() {
         {/* Chart Area */}
         <Card className="lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-pixel font-bold">Activity Overview</h3>
+            <h3 className="font-pixel font-bold">Activity Overview (Last 7 Days)</h3>
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
@@ -180,27 +200,25 @@ export function Dashboard() {
         <Card>
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-pixel font-bold">Recent Uploads</h3>
-            <button className="text-xs font-bold underline hover:text-blue-600">View All</button>
+            <button onClick={() => navigate('/documents')} className="text-xs font-bold underline hover:text-blue-600">View All</button>
           </div>
           <div className="space-y-4">
-            {recentDocs.map((doc) => (
+            {documents.slice(0, 4).map((doc) => (
               <div key={doc.id} className="flex items-center justify-between p-3 border border-border hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className="p-2 bg-gray-100 border border-border shrink-0">
                     <FileText size={16} />
                   </div>
                   <div className="truncate">
-                    <p className="text-sm font-bold truncate">{doc.name}</p>
-                    <p className="text-xs text-muted font-mono mt-1">{doc.time}</p>
+                    <p className="text-sm font-bold truncate">{doc.title}</p>
+                    <p className="text-xs text-muted font-mono mt-1">{new Date(doc.createdAt).toLocaleDateString()}</p>
                   </div>
-                </div>
-                <div className="shrink-0 ml-2">
-                  {doc.status === 'Processed' && <CheckCircle2 size={16} className="text-green-600" />}
-                  {doc.status === 'Processing' && <Clock size={16} className="text-blue-600 animate-spin" />}
-                  {doc.status === 'Failed' && <Activity size={16} className="text-red-600" />}
                 </div>
               </div>
             ))}
+            {documents.length === 0 && (
+              <p className="text-sm text-muted text-center py-8">No documents uploaded yet.</p>
+            )}
           </div>
         </Card>
       </div>
