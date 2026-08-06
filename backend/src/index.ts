@@ -27,9 +27,13 @@ app.get('/health', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+  
+  // Force event loop to stay alive in this specific environment
+  setInterval(() => {}, 1000 * 60 * 60);
+}
 
-// Force event loop to stay alive in this specific environment
-setInterval(() => {}, 1000 * 60 * 60);
+export default app;
