@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { UploadCloud, FileText, Download, Eye, Loader2, Trash2 } from 'lucide-react';
+import { UploadCloud, FileText, Download, Eye, Loader2, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
+import React from 'react';
 import { api } from '../services/api';
 
 interface Entity {
@@ -25,6 +26,16 @@ export function Documents() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const toggleRow = (id: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const fetchDocuments = async () => {
     try {
@@ -158,65 +169,84 @@ export function Documents() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-muted">Loading documents...</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-muted">Loading documents...</td>
                 </tr>
               ) : documents.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-muted">No documents found. Upload one to get started!</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-muted">No documents found. Upload one to get started!</td>
                 </tr>
               ) : (
                 documents.map((doc, idx) => (
-                  <tr key={doc.id} className={`border-b border-border hover:bg-gray-50 ${idx === documents.length - 1 ? 'border-b-0' : ''}`}>
-                    <td className="px-6 py-4 border-r border-border">
-                      <div className="flex items-start gap-2">
-                        <FileText size={16} className="text-blue-600 mt-1 shrink-0" />
-                        <div>
+                  <React.Fragment key={doc.id}>
+                    <tr className={`border-b border-border hover:bg-gray-50 ${idx === documents.length - 1 && !expandedRows.has(doc.id) ? 'border-b-0' : ''}`}>
+                      <td className="px-6 py-4 border-r border-border">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => toggleRow(doc.id)} className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all">
+                            {expandedRows.has(doc.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          </button>
+                          <FileText size={16} className="text-blue-600 shrink-0" />
                           <p className="font-medium text-gray-900">{doc.title}</p>
-                          {doc.summary && (
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2 max-w-md">{doc.summary}</p>
-                          )}
-                          {doc.entities && doc.entities.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {doc.entities.map((entity, i) => (
-                                <span key={i} className="text-[10px] px-1.5 py-0.5 border border-gray-800 bg-yellow-100 text-gray-800 shadow-[1px_1px_0px_0px_#111]">
-                                  <span className="font-bold mr-1">{entity.type}:</span>
-                                  {entity.value}
-                                </span>
-                              ))}
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 border-r border-border">
-                      {doc.type ? (
-                        <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-pixel font-bold bg-blue-100 text-blue-800 border border-blue-800 shadow-[2px_2px_0px_0px_rgba(30,64,175,1)]">
-                          {doc.type}
+                      </td>
+                      <td className="px-6 py-4 border-r border-border">
+                        {doc.type ? (
+                          <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-pixel font-bold bg-blue-100 text-blue-800 border border-blue-800 shadow-[2px_2px_0px_0px_rgba(30,64,175,1)]">
+                            {doc.type}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs italic">Unknown</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 border-r border-border text-sm">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 border-r border-border">
+                        <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-green-100 text-green-800 border-green-800">
+                          Ready
                         </span>
-                      ) : (
-                        <span className="text-gray-400 text-xs italic">Unknown</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 border-r border-border text-sm">{new Date(doc.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 border-r border-border">
-                      <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-green-100 text-green-800 border-green-800">
-                        Ready
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex">
-                          <Eye size={16} />
-                        </a>
-                        <a href={doc.fileUrl} download className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex">
-                          <Download size={16} />
-                        </a>
-                        <button onClick={() => handleDelete(doc.id)} className="p-1 hover:bg-red-100 text-red-600 border border-transparent hover:border-red-600 transition-all inline-flex">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex">
+                            <Eye size={16} />
+                          </a>
+                          <a href={doc.fileUrl} download className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex">
+                            <Download size={16} />
+                          </a>
+                          <button onClick={() => handleDelete(doc.id)} className="p-1 hover:bg-red-100 text-red-600 border border-transparent hover:border-red-600 transition-all inline-flex">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedRows.has(doc.id) && (
+                      <tr className={`bg-gray-50 border-b border-border ${idx === documents.length - 1 ? 'border-b-0' : ''}`}>
+                        <td colSpan={5} className="px-6 py-4">
+                          <div className="ml-8">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-pixel">AI Analysis</h4>
+                            
+                            {doc.summary ? (
+                              <p className="text-sm text-gray-700 mb-4 bg-white p-3 border border-border shadow-[2px_2px_0px_0px_#111]">{doc.summary}</p>
+                            ) : (
+                              <p className="text-sm text-gray-400 italic mb-4">No summary available.</p>
+                            )}
+                            
+                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-pixel">Extracted Data Points</h4>
+                            {doc.entities && doc.entities.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {doc.entities.map((entity, i) => (
+                                  <div key={i} className="bg-white border border-border shadow-[2px_2px_0px_0px_#111] p-2 flex flex-col">
+                                    <span className="text-[10px] font-bold text-blue-800 font-pixel mb-1">{entity.type}</span>
+                                    <span className="text-sm text-gray-800 break-words">{entity.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-400 italic">No structured data found.</p>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))
               )}
             </tbody>
