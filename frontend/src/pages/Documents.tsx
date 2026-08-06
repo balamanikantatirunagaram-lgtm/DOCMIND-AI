@@ -42,9 +42,7 @@ export function Documents() {
     formData.append('title', file.name);
 
     try {
-      await api.post('/documents/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/documents/upload', formData);
       fetchDocuments();
     } catch (error) {
       console.error('Upload failed', error);
