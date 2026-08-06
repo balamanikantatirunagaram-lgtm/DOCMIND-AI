@@ -15,6 +15,8 @@ interface Document {
   id: string;
   title: string;
   fileUrl: string;
+  type?: string;
+  summary?: string;
   createdAt: string;
   entities?: Entity[];
 }
@@ -147,9 +149,10 @@ export function Documents() {
             <thead className="text-xs uppercase bg-gray-100 border-b border-border font-pixel">
               <tr>
                 <th className="px-6 py-4 border-r border-border">Name</th>
-                <th className="px-6 py-4 border-r border-border">Date Uploaded</th>
-                <th className="px-6 py-4 border-r border-border">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4 border-r border-border w-32">Type</th>
+                <th className="px-6 py-4 border-r border-border w-32">Date</th>
+                <th className="px-6 py-4 border-r border-border w-24">Status</th>
+                <th className="px-6 py-4 text-right w-32">Actions</th>
               </tr>
             </thead>
             <tbody>

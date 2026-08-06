@@ -11,6 +11,28 @@ export class AIService {
     return response;
   }
 
+  public async classifyAndSummarizeDocument(text: string): Promise<{ type: string, summary: string }> {
+    const prompt = `You are a document analyzer. Analyze the following document text and provide a JSON response with exactly two keys: "type" (a short string like "Invoice", "Contract", "Resume", "Medical Report", "Financial Statement", or "Other") and "summary" (a 1-2 sentence concise summary of the document).
+    
+    Document text: ${text.substring(0, 6000)}
+    
+    Return ONLY valid JSON.`;
+    
+    const response = await this.callNvidiaApi([
+      { role: 'user', content: prompt }
+    ], 'meta/llama-3.1-8b-instruct');
+    
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      return { type: "Other", summary: response };
+    } catch (e) {
+      return { type: "Other", summary: "Failed to parse AI response." };
+    }
+  }
+
   public async extractTextFromImage(base64Image: string): Promise<string> {
     const messages = [
       {

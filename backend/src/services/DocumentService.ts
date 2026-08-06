@@ -58,11 +58,27 @@ export class DocumentService {
       console.error('Failed to parse document text', err);
     }
 
+    let type = null;
+    let summary = null;
+
+    if (extractedText && extractedText.length > 50) {
+      try {
+        console.log('Classifying and summarizing document...');
+        const aiResult = await aiService.classifyAndSummarizeDocument(extractedText);
+        type = aiResult.type;
+        summary = aiResult.summary;
+      } catch (err) {
+        console.error('Failed to classify and summarize document', err);
+      }
+    }
+
     const document = await prisma.document.create({
       data: {
         title,
         fileUrl,
         extractedText,
+        type,
+        summary,
         uploaderId,
         organizationId,
       },
