@@ -182,7 +182,7 @@ export function KnowledgeGraph() {
         </Card>
 
         {/* Graph Area */}
-        <Card className="flex-1 p-0 overflow-hidden relative min-h-0 bg-white" ref={containerRef}>
+        <div className="flex-1 p-0 overflow-hidden relative min-h-0 bg-white border-4 border-border shadow-[8px_8px_0px_0px_#111]" ref={containerRef}>
           {isLoading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm z-10">
               <div className="flex flex-col items-center gap-6 p-8 bg-white border-4 border-border shadow-[8px_8px_0px_0px_#111] max-w-sm text-center">
@@ -250,8 +250,6 @@ export function KnowledgeGraph() {
               linkLabel="label"
               linkCanvasObjectMode={() => 'after'}
               linkCanvasObject={(link: any, ctx, globalScale) => {
-                const MAX_FONT_SIZE = 4;
-                const LABEL_NODE_MARGIN = 12;
                 
                 const start = link.source;
                 const end = link.target;
@@ -292,7 +290,7 @@ export function KnowledgeGraph() {
               }}
             />
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );

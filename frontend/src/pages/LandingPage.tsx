@@ -1,8 +1,8 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
-import { FileText, MessageSquare, Zap, ChevronRight, UploadCloud, BrainCircuit } from 'lucide-react';
+import { MessageSquare, Zap, ChevronRight, UploadCloud, BrainCircuit } from 'lucide-react';
 
 export function LandingPage() {
   const containerVariants = {
@@ -15,7 +15,7 @@ export function LandingPage() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } },
   };
 
   return (

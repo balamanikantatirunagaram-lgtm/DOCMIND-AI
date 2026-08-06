@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, Plus, Trash2, Save } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
@@ -13,7 +13,7 @@ interface Entity {
 interface Document {
   id: string;
   title: string;
-  entities: Entity[];
+  entities?: Entity[];
 }
 
 interface Props {
@@ -24,7 +24,7 @@ interface Props {
 
 export function EditEntitiesModal({ document, onClose, onSave }: Props) {
   const [entities, setEntities] = useState<Omit<Entity, 'id'>[]>(
-    document.entities.map(e => ({ type: e.type, value: e.value, confidence: e.confidence }))
+    (document.entities || []).map(e => ({ type: e.type, value: e.value, confidence: e.confidence }))
   );
   const [isSaving, setIsSaving] = useState(false);
 

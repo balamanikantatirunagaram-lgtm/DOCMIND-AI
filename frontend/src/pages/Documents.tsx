@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Search, Plus, Filter, FileText, Download, ChevronDown, ChevronRight, UploadCloud, Loader2, Star, Eye, Trash2, Folder } from 'lucide-react';
+import { Search, FileText, Download, ChevronDown, ChevronRight, UploadCloud, Loader2, Star, Eye, Trash2, Folder } from 'lucide-react';
 import React from 'react';
 import { api } from '../services/api';
 
@@ -28,7 +28,7 @@ interface Document {
   entities?: Entity[];
 }
 
-export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
+export function Documents() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,7 +93,7 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
 
   const handleToggleStar = async (id: string, currentStatus: boolean) => {
     try {
-      const response = await api.patch(`/documents/${id}`, { isStarred: !currentStatus });
+      await api.patch(`/documents/${id}`, { isStarred: !currentStatus });
       setDocuments(docs => docs.map(doc => doc.id === id ? { ...doc, isStarred: !currentStatus } : doc));
     } catch (error) {
       console.error('Toggle star failed', error);
@@ -416,7 +416,7 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
 
       {editingDoc && (
         <EditEntitiesModal 
-          document={editingDoc}
+          document={editingDoc as any}
           onClose={() => setEditingDoc(null)}
           onSave={async (newEntities) => {
             try {
