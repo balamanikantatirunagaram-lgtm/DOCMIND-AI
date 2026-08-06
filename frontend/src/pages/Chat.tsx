@@ -123,7 +123,7 @@ export function Chat() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-6">
+    <div className="flex h-[calc(100vh-9rem)] gap-6">
       {/* Sidebar for History */}
       <Card className="w-64 flex flex-col p-0 overflow-hidden shrink-0">
         <div className="p-4 border-b border-border bg-gray-50 flex justify-between items-center">
@@ -143,14 +143,16 @@ export function Chat() {
             <div key={chat.id} className="relative group">
               <button
                 onClick={() => setActiveChatId(chat.id)}
-                className={`w-full text-left px-3 py-2 text-sm font-sans truncate border flex items-center gap-2 ${
+                className={`w-full text-left px-3 py-2 text-sm font-sans border flex items-center gap-2 pr-8 ${
                   activeChatId === chat.id 
-                    ? 'bg-blue-50 border-blue-200 text-blue-900 shadow-pixel-sm' 
+                    ? 'bg-blue-50 border-blue-200 text-blue-900 shadow-[2px_2px_0px_0px_#111]' 
                     : 'border-transparent hover:bg-gray-100'
                 }`}
               >
                 <MessageSquare size={14} className="shrink-0" />
-                {chat.title || `Chat ${new Date(chat.updatedAt).toLocaleDateString()}`}
+                <span className="truncate flex-1 min-w-0">
+                  {chat.title || `Chat ${new Date(chat.updatedAt).toLocaleDateString()}`}
+                </span>
               </button>
               <button
                 onClick={async (e) => {

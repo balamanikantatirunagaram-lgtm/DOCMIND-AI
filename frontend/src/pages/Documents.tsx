@@ -161,12 +161,12 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-pixel font-bold">Documents</h1>
           <p className="text-muted text-sm mt-1">Manage and analyze your document repository.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <select 
             value={filterFolder}
             onChange={(e) => setFilterFolder(e.target.value)}
