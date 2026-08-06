@@ -10,6 +10,7 @@ interface Entity {
   id: string;
   type: string;
   value: string;
+  confidence: number;
 }
 
 interface Document {
@@ -243,9 +244,30 @@ export function Documents() {
                       </td>
                       <td className="px-6 py-4 border-r border-border text-sm">{new Date(doc.createdAt).toLocaleDateString()}</td>
                       <td className="px-6 py-4 border-r border-border">
-                        <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-green-100 text-green-800 border-green-800">
-                          Ready
-                        </span>
+                        {(() => {
+                          const hasLowConfidence = doc.entities?.some(e => e.confidence && e.confidence < 0.8) || false;
+                          let missingFields: string[] = [];
+                          
+                          if (doc.entities && doc.type === 'Invoice') {
+                            const types = doc.entities.map(e => e.type.toLowerCase());
+                            if (!types.some(t => t.includes('total') || t.includes('amount'))) missingFields.push('Total Amount');
+                            if (!types.some(t => t.includes('number'))) missingFields.push('Invoice Number');
+                          }
+
+                          if (hasLowConfidence || missingFields.length > 0) {
+                            return (
+                              <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-orange-100 text-orange-800 border-orange-800" title={missingFields.length > 0 ? `Missing: ${missingFields.join(', ')}` : 'Low Confidence Items'}>
+                                Needs Review
+                              </span>
+                            );
+                          }
+                          
+                          return (
+                            <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-green-100 text-green-800 border-green-800">
+                              Ready
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -276,12 +298,40 @@ export function Documents() {
                               <p className="text-sm text-gray-400 italic mb-4">No summary available.</p>
                             )}
                             
+                            {(() => {
+                              let missingFields: string[] = [];
+                              if (doc.entities && doc.type === 'Invoice') {
+                                const types = doc.entities.map(e => e.type.toLowerCase());
+                                if (!types.some(t => t.includes('total') || t.includes('amount'))) missingFields.push('Total Amount');
+                                if (!types.some(t => t.includes('number'))) missingFields.push('Invoice Number');
+                              }
+                              return missingFields.length > 0 ? (
+                                <div className="mb-4 bg-orange-50 border border-orange-500 shadow-[2px_2px_0px_0px_rgba(249,115,22,1)] p-3">
+                                  <h4 className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-1 font-pixel">Missing Critical Information</h4>
+                                  <p className="text-sm text-orange-900">The AI could not find the following required fields for this document type: <strong>{missingFields.join(', ')}</strong></p>
+                                </div>
+                              ) : null;
+                            })()}
+
                             <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-pixel">Extracted Data Points</h4>
                             {doc.entities && doc.entities.length > 0 ? (
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {doc.entities.map((entity, i) => (
-                                  <div key={i} className="bg-white border border-border shadow-[2px_2px_0px_0px_#111] p-2 flex flex-col">
-                                    <span className="text-[10px] font-bold text-blue-800 font-pixel mb-1">{entity.type}</span>
+                                  <div key={i} className={`bg-white border shadow-[2px_2px_0px_0px_#111] p-2 flex flex-col ${
+                                    entity.confidence && entity.confidence < 0.8 
+                                      ? 'border-orange-500' 
+                                      : 'border-border'
+                                  }`}>
+                                    <div className="flex justify-between items-center mb-1">
+                                      <span className="text-[10px] font-bold text-blue-800 font-pixel">{entity.type}</span>
+                                      {entity.confidence && (
+                                        <span className={`text-[9px] font-pixel px-1 ${
+                                          entity.confidence < 0.8 ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+                                        }`}>
+                                          {Math.round(entity.confidence * 100)}%
+                                        </span>
+                                      )}
+                                    </div>
                                     <span className="text-sm text-gray-800 break-words">{entity.value}</span>
                                   </div>
                                 ))}
