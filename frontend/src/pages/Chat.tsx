@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Send, Bot, User, Paperclip, Plus, MessageSquare } from 'lucide-react';
+import { Send, Bot, User, Paperclip, Plus, MessageSquare, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
 
 interface Message {
@@ -13,6 +13,7 @@ interface Message {
 
 interface ChatHistory {
   id: string;
+  title?: string;
   updatedAt: string;
 }
 
@@ -21,6 +22,7 @@ export function Chat() {
   const [input, setInput] = useState('');
   const [chats, setChats] = useState<ChatHistory[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -59,13 +61,14 @@ export function Chat() {
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isThinking) return;
 
     const content = input;
     setInput('');
 
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content };
     setMessages(prev => [...prev, userMsg]);
+    setIsThinking(true);
 
     try {
       const payload: any = { message: content };
@@ -89,6 +92,8 @@ export function Chat() {
         role: 'assistant', 
         content: 'Error communicating with AI server. Please make sure you are logged in.'
       }]);
+    } finally {
+      setIsThinking(false);
     }
   };
 
@@ -100,13 +105,12 @@ export function Chat() {
     formData.append('file', file);
     formData.append('title', file.name);
 
+    setIsThinking(true);
     try {
-      // Upload document first
       await api.post('/documents/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      // Inject a system message or user message representing the upload
       const systemMsg: Message = { 
         id: Date.now().toString(), 
         role: 'assistant', 
@@ -115,6 +119,8 @@ export function Chat() {
       setMessages(prev => [...prev, systemMsg]);
     } catch (error) {
       alert('Failed to upload document in chat.');
+    } finally {
+      setIsThinking(false);
     }
   };
 
@@ -144,7 +150,7 @@ export function Chat() {
               }`}
             >
               <MessageSquare size={14} className="shrink-0" />
-              Chat {new Date(chat.updatedAt).toLocaleDateString()}
+              {chat.title || `Chat ${new Date(chat.updatedAt).toLocaleDateString()}`}
             </button>
           ))}
           {chats.length === 0 && (
@@ -173,6 +179,17 @@ export function Chat() {
                 </div>
               </div>
             ))}
+            {isThinking && (
+              <div className="flex gap-4">
+                <div className="shrink-0 w-8 h-8 flex items-center justify-center border border-border shadow-[2px_2px_0px_0px_#111] bg-black text-white">
+                  <Bot size={16} />
+                </div>
+                <div className="p-4 border border-border shadow-[2px_2px_0px_0px_#111] bg-white flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin text-muted" />
+                  <span className="text-sm text-muted font-pixel">AI is analyzing...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="p-4 border-t border-border bg-card">
@@ -187,8 +204,9 @@ export function Chat() {
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted hover:text-text transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted hover:text-text transition-colors disabled:opacity-50"
                   title="Upload Document"
+                  disabled={isThinking}
                 >
                   <Paperclip size={20} />
                 </button>
@@ -197,10 +215,11 @@ export function Chat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask something about your documents..."
-                  className="w-full pl-10 pr-4 py-3 border border-border bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-sans text-sm shadow-[2px_2px_0px_0px_#111]"
+                  disabled={isThinking}
+                  className="w-full pl-10 pr-4 py-3 border border-border bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-sans text-sm shadow-[2px_2px_0px_0px_#111] disabled:opacity-50"
                 />
               </div>
-              <Button type="submit" className="flex items-center gap-2 px-6">
+              <Button type="submit" disabled={isThinking} className="flex items-center gap-2 px-6">
                 Send <Send size={16} />
               </Button>
             </form>

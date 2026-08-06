@@ -1,10 +1,8 @@
 import React from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { 
-  FileText, Zap, HardDrive, Search, Plus, 
-  Activity, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2 
-} from 'lucide-react';
+import { Search, Plus, FileText, Users, Activity, BarChart2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const data = [
@@ -17,15 +15,24 @@ const data = [
   { name: 'Sun', documents: 34, aiUsage: 43 },
 ];
 
+const stats = [
+  { label: 'Total Documents', value: '1,024', icon: FileText, change: '+12% from last month' },
+  { label: 'Active Users', value: '48', icon: Users, change: '+4 new this week' },
+  { label: 'API Calls', value: '89.2k', icon: Activity, change: '+24% from last week' },
+  { label: 'Storage Used', value: '45.2 GB', icon: BarChart2, change: '12% of total quota' },
+];
+
 const recentDocs = [
-  { id: 1, name: 'Q3_Financial_Report.pdf', status: 'Processed', time: '10 mins ago', type: 'PDF' },
-  { id: 2, name: 'Vendor_Contract_Acme.docx', status: 'Processing', time: '1 hr ago', type: 'DOCX' },
-  { id: 3, name: 'Patient_Records_Batch1.zip', status: 'Failed', time: '3 hrs ago', type: 'ZIP' },
-  { id: 4, name: 'Employee_Handbook_2026.pdf', status: 'Processed', time: '5 hrs ago', type: 'PDF' },
+  { id: '1', name: 'Q3_Financial_Report.pdf', type: 'PDF', status: 'Processed' },
+  { id: '2', name: 'Vendor_Contract_Acme.docx', type: 'DOCX', status: 'Pending' },
+  { id: '3', name: 'Employee_Handbook.pdf', type: 'PDF', status: 'Processed' },
+  { id: '4', name: 'Invoice_1024.png', type: 'IMAGE', status: 'Failed' },
 ];
 
 export function Dashboard() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -39,12 +46,11 @@ export function Dashboard() {
     formData.append('title', file.name);
 
     try {
-      // Assuming api is imported from '../services/api'
       const { api } = await import('../services/api');
       await api.post('/documents/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert('Document uploaded successfully!');
+      navigate('/chat');
     } catch (error) {
       alert('Failed to upload document.');
     }

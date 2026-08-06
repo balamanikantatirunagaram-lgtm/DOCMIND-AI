@@ -38,8 +38,9 @@ export class AIController {
           return;
         }
       } else {
+        const title = message.substring(0, 30) + (message.length > 30 ? '...' : '');
         chat = await prisma.chat.create({
-          data: { userId: req.user.id },
+          data: { userId: req.user.id, title },
           include: { messages: true }
         });
       }
