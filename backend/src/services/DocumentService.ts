@@ -75,6 +75,7 @@ export class DocumentService {
     return prisma.document.findMany({
       where: { organizationId },
       orderBy: { createdAt: 'desc' },
+      include: { entities: true },
     });
   }
 
@@ -83,5 +84,21 @@ export class DocumentService {
       where: { id, organizationId },
       include: { entities: true },
     });
+  }
+
+  public async deleteDocument(id: string, organizationId: string) {
+    const document = await prisma.document.findFirst({
+      where: { id, organizationId },
+    });
+
+    if (!document) {
+      throw new Error('Document not found');
+    }
+
+    await prisma.document.delete({
+      where: { id },
+    });
+
+    return true;
   }
 }

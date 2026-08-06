@@ -13,5 +13,6 @@ router.use(authenticate);
 router.post('/upload', upload.single('file'), documentController.uploadDocument.bind(documentController));
 router.get('/', documentController.getDocuments.bind(documentController));
 router.get('/:id', documentController.getDocumentById.bind(documentController));
+router.delete('/:id', documentController.deleteDocument.bind(documentController));
 
 export default router;

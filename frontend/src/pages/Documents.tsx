@@ -2,14 +2,21 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { UploadCloud, FileText, Download, Eye, Loader2 } from 'lucide-react';
+import { UploadCloud, FileText, Download, Eye, Loader2, Trash2 } from 'lucide-react';
 import { api } from '../services/api';
+
+interface Entity {
+  id: string;
+  type: string;
+  value: string;
+}
 
 interface Document {
   id: string;
   title: string;
   fileUrl: string;
   createdAt: string;
+  entities?: Entity[];
 }
 
 export function Documents() {
@@ -52,6 +59,47 @@ export function Documents() {
     }
   }, []);
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+    try {
+      await api.delete(`/documents/${id}`);
+      setDocuments(docs => docs.filter(doc => doc.id !== id));
+    } catch (error) {
+      console.error('Delete failed', error);
+      alert('Failed to delete document');
+    }
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Document ID', 'Title', 'Date Uploaded', 'Entity Type', 'Entity Value'];
+    const rows: string[][] = [];
+
+    documents.forEach(doc => {
+      const baseRow = [doc.id, doc.title, new Date(doc.createdAt).toLocaleDateString()];
+      if (doc.entities && doc.entities.length > 0) {
+        doc.entities.forEach(ent => {
+          rows.push([...baseRow, ent.type, ent.value]);
+        });
+      } else {
+        rows.push([...baseRow, '', '']);
+      }
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'documents_export.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
@@ -61,6 +109,10 @@ export function Documents() {
           <h1 className="text-3xl font-pixel font-bold">Documents</h1>
           <p className="text-muted text-sm mt-1">Manage and analyze your document repository.</p>
         </div>
+        <Button onClick={handleExportCSV} className="flex items-center gap-2">
+          <Download size={16} />
+          Export CSV
+        </Button>
       </div>
 
       <Card 
@@ -130,6 +182,9 @@ export function Documents() {
                         <a href={doc.fileUrl} download className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex">
                           <Download size={16} />
                         </a>
+                        <button onClick={() => handleDelete(doc.id)} className="p-1 hover:bg-red-100 text-red-600 border border-transparent hover:border-red-600 transition-all inline-flex">
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </td>
                   </tr>

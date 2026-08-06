@@ -64,4 +64,24 @@ export class DocumentController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  public async deleteDocument(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const { id } = req.params;
+      await documentService.deleteDocument(id as string, req.user.organizationId);
+      
+      res.status(200).json({ success: true });
+    } catch (error: any) {
+      if (error.message === 'Document not found') {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  }
 }
