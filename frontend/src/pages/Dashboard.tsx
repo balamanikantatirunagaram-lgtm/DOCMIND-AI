@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { 
-  FileText, Upload, Zap, HardDrive, Search, Plus, 
+  FileText, Zap, HardDrive, Search, Plus, 
   Activity, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2 
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';

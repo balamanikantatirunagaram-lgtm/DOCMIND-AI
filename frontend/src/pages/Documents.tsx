@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { UploadCloud, FileText, Trash2, Download, Eye, Loader2 } from 'lucide-react';
+import { UploadCloud, FileText, Download, Eye, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
 
 interface Document {
