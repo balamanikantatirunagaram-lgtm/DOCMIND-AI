@@ -151,4 +151,46 @@ export class DocumentController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  public async generateAIGraph(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const { documentIds } = req.body;
+      if (!documentIds || !Array.isArray(documentIds) || documentIds.length === 0) {
+        res.status(400).json({ error: 'documentIds array is required' });
+        return;
+      }
+
+      const { PrismaClient } = require('@prisma/client');
+      const prisma = new PrismaClient();
+
+      // Fetch the selected documents
+      const documents = await prisma.document.findMany({
+        where: {
+          id: { in: documentIds },
+          organizationId: req.user.organizationId
+        },
+        include: {
+          entities: true
+        }
+      });
+
+      if (documents.length === 0) {
+        res.status(404).json({ error: 'No documents found' });
+        return;
+      }
+
+      // Call AI Service
+      const { AIService } = require('../services/AIService');
+      const aiService = new AIService();
+      const graphData = await aiService.generateKnowledgeGraph(documents);
+      
+      res.status(200).json(graphData);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }

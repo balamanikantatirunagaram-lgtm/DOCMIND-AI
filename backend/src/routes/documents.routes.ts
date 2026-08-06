@@ -11,6 +11,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.use(authenticate);
 
 router.post('/upload', upload.single('file'), documentController.uploadDocument.bind(documentController));
+router.post('/graph/ai', documentController.generateAIGraph.bind(documentController));
 router.get('/graph', documentController.getGraphData.bind(documentController));
 router.get('/', documentController.getDocuments.bind(documentController));
 router.get('/:id', documentController.getDocumentById.bind(documentController));

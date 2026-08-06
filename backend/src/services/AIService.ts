@@ -106,4 +106,51 @@ export class AIService {
       throw new Error('Failed to communicate with AI service');
     }
   }
+
+  public async generateKnowledgeGraph(documents: any[]): Promise<{ nodes: any[], links: any[] }> {
+    const docData = documents.map(d => ({
+      id: d.id,
+      title: d.title,
+      summary: d.summary,
+      entities: d.entities?.map((e: any) => ({ type: e.type, value: e.value })) || []
+    }));
+
+    const prompt = `You are a data analysis AI. I am providing you a list of documents along with their summaries and extracted entities.
+    Please construct a knowledge graph connecting these documents. 
+    1. Identify shared concepts, direct relationships, or contradictions between the documents.
+    2. Create nodes for each document (type: "Document") and for key shared concepts/entities (type: "Entity").
+    3. Create links between them. The links must have a "source" (id of node), "target" (id of node), and a short "label" describing the relationship (e.g., "mentions", "contradicts", "billed to", "same author").
+    
+    Return ONLY a valid JSON object matching this structure:
+    {
+      "nodes": [
+        { "id": "unique-node-id", "name": "Node Label", "type": "Document" | "Entity" }
+      ],
+      "links": [
+        { "source": "source-node-id", "target": "target-node-id", "label": "relationship description" }
+      ]
+    }
+    
+    Ensure document node IDs match the provided document IDs.
+    
+    Documents: ${JSON.stringify(docData, null, 2)}`;
+
+    const response = await this.callNvidiaApi([
+      { role: 'user', content: prompt }
+    ], 'meta/llama-3.1-8b-instruct');
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.nodes && parsed.links) {
+          return parsed;
+        }
+      }
+      return { nodes: [], links: [] };
+    } catch (e) {
+      console.error('Failed to parse AI graph JSON', e);
+      return { nodes: [], links: [] };
+    }
+  }
 }
