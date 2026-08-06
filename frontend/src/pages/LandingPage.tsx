@@ -57,11 +57,11 @@ export function LandingPage() {
             <span className="font-pixel text-sm font-bold uppercase tracking-widest">v2.0 Vision AI Now Live</span>
           </motion.div>
           
-          <motion.h2 variants={itemVariants} className="text-6xl md:text-8xl font-pixel font-extrabold leading-[1.1] tracking-tight">
-            CHAT WITH YOUR <br/>
-            <span className="relative inline-block mt-4">
+          <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-sans font-extrabold leading-[1.2] tracking-tight">
+            Chat with your <br/>
+            <span className="relative inline-block mt-4 md:mt-6">
               <span className="absolute inset-0 bg-blue-600 translate-x-2 translate-y-2 border-2 border-[#111]"></span>
-              <span className="relative bg-white text-[#111] border-2 border-[#111] px-4 py-2 block">DOCUMENTS</span>
+              <span className="relative bg-white text-[#111] border-2 border-[#111] px-6 py-3 block font-pixel uppercase tracking-tight text-4xl md:text-6xl">Documents</span>
             </span>
           </motion.h2>
           
