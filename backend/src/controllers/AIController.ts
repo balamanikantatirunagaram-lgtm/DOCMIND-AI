@@ -117,12 +117,13 @@ export class AIController {
     try {
       if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
       const { id } = req.params;
-      const chat = await prisma.chat.findUnique({ where: { id } });
+      const chatId = id as string;
+      const chat = await prisma.chat.findUnique({ where: { id: chatId } });
       if (!chat || chat.userId !== req.user.id) { res.status(404).json({ error: 'Chat not found' }); return; }
       
       // Delete messages first to satisfy foreign key constraints (if any)
-      await prisma.message.deleteMany({ where: { chatId: id } });
-      await prisma.chat.delete({ where: { id } });
+      await prisma.message.deleteMany({ where: { chatId: chatId } });
+      await prisma.chat.delete({ where: { id: chatId } });
       
       res.status(200).json({ message: 'Chat deleted' });
     } catch (error: any) { res.status(500).json({ error: error.message }); }
