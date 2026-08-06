@@ -175,6 +175,16 @@ export function Documents() {
                           {doc.summary && (
                             <p className="text-xs text-gray-500 mt-1 line-clamp-2 max-w-md">{doc.summary}</p>
                           )}
+                          {doc.entities && doc.entities.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {doc.entities.map((entity, i) => (
+                                <span key={i} className="text-[10px] px-1.5 py-0.5 border border-gray-800 bg-yellow-100 text-gray-800 shadow-[1px_1px_0px_0px_#111]">
+                                  <span className="font-bold mr-1">{entity.type}:</span>
+                                  {entity.value}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>

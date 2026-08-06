@@ -33,6 +33,29 @@ export class AIService {
     }
   }
 
+  public async extractEntities(text: string): Promise<{ type: string, value: string, confidence: number }[]> {
+    const prompt = `You are a data extraction AI. Extract the most important structured data (entities) from the following document text.
+    Return ONLY a valid JSON array of objects. Each object must have exactly three keys: "type" (string, e.g. "Name", "Date", "Total Amount", "Invoice Number", "Address"), "value" (string, the extracted value), and "confidence" (number between 0 and 1 indicating how certain you are).
+    Extract between 0 and 10 key entities depending on what is relevant.
+    
+    Document text: ${text.substring(0, 6000)}`;
+
+    const response = await this.callNvidiaApi([
+      { role: 'user', content: prompt }
+    ], 'meta/llama-3.1-8b-instruct');
+
+    try {
+      const jsonMatch = response.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      return [];
+    } catch (e) {
+      console.error('Failed to parse entities JSON', e);
+      return [];
+    }
+  }
+
   public async extractTextFromImage(base64Image: string): Promise<string> {
     const messages = [
       {

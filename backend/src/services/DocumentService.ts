@@ -60,6 +60,7 @@ export class DocumentService {
 
     let type = null;
     let summary = null;
+    let entities: any[] = [];
 
     if (extractedText && extractedText.length > 50) {
       try {
@@ -67,8 +68,11 @@ export class DocumentService {
         const aiResult = await aiService.classifyAndSummarizeDocument(extractedText);
         type = aiResult.type;
         summary = aiResult.summary;
+
+        console.log('Extracting structured data entities...');
+        entities = await aiService.extractEntities(extractedText);
       } catch (err) {
-        console.error('Failed to classify and summarize document', err);
+        console.error('Failed to classify, summarize, or extract entities', err);
       }
     }
 
@@ -81,7 +85,17 @@ export class DocumentService {
         summary,
         uploaderId,
         organizationId,
+        entities: {
+          create: entities.map(entity => ({
+            type: entity.type,
+            value: entity.value,
+            confidence: entity.confidence || 0.9,
+          }))
+        }
       },
+      include: {
+        entities: true
+      }
     });
 
     return document;
