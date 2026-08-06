@@ -56,7 +56,7 @@ export function Folders() {
     try {
       const docIdsArray = Array.from(selectedDocIds);
       await Promise.all(
-        docIdsArray.map(id => api.put(`/documents/${id}`, { folder: newFolderName.trim() }))
+        docIdsArray.map(id => api.patch(`/documents/${id}`, { folder: newFolderName.trim() }))
       );
       
       setIsModalOpen(false);
