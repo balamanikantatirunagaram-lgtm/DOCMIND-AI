@@ -112,4 +112,19 @@ export class AIController {
       res.status(200).json(chat);
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   }
+
+  public async deleteChat(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      const { id } = req.params;
+      const chat = await prisma.chat.findUnique({ where: { id } });
+      if (!chat || chat.userId !== req.user.id) { res.status(404).json({ error: 'Chat not found' }); return; }
+      
+      // Delete messages first to satisfy foreign key constraints (if any)
+      await prisma.message.deleteMany({ where: { chatId: id } });
+      await prisma.chat.delete({ where: { id } });
+      
+      res.status(200).json({ message: 'Chat deleted' });
+    } catch (error: any) { res.status(500).json({ error: error.message }); }
+  }
 }

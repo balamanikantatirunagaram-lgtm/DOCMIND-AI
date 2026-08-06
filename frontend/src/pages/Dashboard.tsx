@@ -12,6 +12,9 @@ export function Dashboard() {
   const navigate = useNavigate();
   const [documents, setDocuments] = React.useState<any[]>([]);
   const [chats, setChats] = React.useState<any[]>([]);
+  const totalMessages = React.useMemo(() => {
+    return chats.reduce((sum, chat) => sum + (chat.messages?.length || 0), 0);
+  }, [chats]);
 
   React.useEffect(() => {
     async function loadData() {
@@ -155,15 +158,15 @@ export function Dashboard() {
         <Card className="flex flex-col">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm font-pixel text-muted">Active Users</p>
-              <h3 className="text-3xl font-bold mt-2">1</h3>
+              <p className="text-sm font-pixel text-muted">Total Messages</p>
+              <h3 className="text-3xl font-bold mt-2">{totalMessages}</h3>
             </div>
             <div className="p-3 bg-green-100 border border-border shadow-[2px_2px_0px_0px_#111111]">
               <Users size={20} className="text-green-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm text-green-600 font-medium">
-            <span>Current Session</span>
+            <span>Across all chats</span>
           </div>
         </Card>
       </div>
