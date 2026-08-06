@@ -1,0 +1,97 @@
+import { Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
+import { AIService } from '../services/AIService';
+import prisma from '../lib/prisma';
+
+const aiService = new AIService();
+
+export class AIController {
+  public async summarize(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { text } = req.body;
+      if (!text) {
+        res.status(400).json({ error: 'Text is required for summarization' });
+        return;
+      }
+
+      const summary = await aiService.summarizeDocument(text);
+      res.status(200).json({ summary });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  public async chat(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const { chatId, message } = req.body;
+      
+      let chat;
+      if (chatId) {
+        chat = await prisma.chat.findUnique({ where: { id: chatId }, include: { messages: true } });
+        if (!chat || chat.userId !== req.user.id) {
+          res.status(404).json({ error: 'Chat not found' });
+          return;
+        }
+      } else {
+        chat = await prisma.chat.create({
+          data: { userId: req.user.id },
+          include: { messages: true }
+        });
+      }
+
+      await prisma.message.create({
+        data: {
+          chatId: chat.id,
+          role: 'user',
+          content: message,
+        },
+      });
+
+      const messagesForAI = chat.messages.map(m => ({ role: m.role, content: m.content }));
+      messagesForAI.push({ role: 'user', content: message });
+
+      const aiResponse = await aiService.chat(messagesForAI);
+
+      const savedAiMessage = await prisma.message.create({
+        data: {
+          chatId: chat.id,
+          role: 'assistant',
+          content: aiResponse,
+        },
+      });
+
+      res.status(200).json({ chatId: chat.id, message: savedAiMessage });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+  public async getChats(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      const chats = await prisma.chat.findMany({
+        where: { userId: req.user.id },
+        include: { messages: true },
+        orderBy: { updatedAt: 'desc' }
+      });
+      res.status(200).json(chats);
+    } catch (error: any) { res.status(500).json({ error: error.message }); }
+  }
+
+  public async getChatById(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      const { id } = req.params;
+      const chat = await prisma.chat.findUnique({
+        where: { id: id as string },
+        include: { messages: { orderBy: { createdAt: 'asc' } } }
+      });
+      if (!chat || chat.userId !== req.user.id) { res.status(404).json({ error: 'Chat not found' }); return; }
+      res.status(200).json(chat);
+    } catch (error: any) { res.status(500).json({ error: error.message }); }
+  }
+}
