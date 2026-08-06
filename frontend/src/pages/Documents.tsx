@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -131,17 +132,31 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialFolder = queryParams.get('folder') || 'All';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
+  const [filterFolder, setFilterFolder] = useState(initialFolder);
   const [editingDoc, setEditingDoc] = useState<Document | null>(null);
 
+  useEffect(() => {
+    const currentParam = new URLSearchParams(location.search).get('folder');
+    if (currentParam) {
+      setFilterFolder(currentParam);
+    }
+  }, [location.search]);
+
   const uniqueTypes = Array.from(new Set(documents.map(d => d.type).filter(Boolean))) as string[];
+  const uniqueFolders = Array.from(new Set(documents.map(d => d.folder || 'Misc'))) as string[];
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (doc.summary && doc.summary.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesType = filterType === 'All' || doc.type === filterType;
-    return matchesSearch && matchesType;
+    const matchesFolder = filterFolder === 'All' || (doc.folder || 'Misc') === filterFolder;
+    return matchesSearch && matchesType && matchesFolder;
   });
 
   return (
@@ -152,6 +167,16 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
           <p className="text-muted text-sm mt-1">Manage and analyze your document repository.</p>
         </div>
         <div className="flex gap-4">
+          <select 
+            value={filterFolder}
+            onChange={(e) => setFilterFolder(e.target.value)}
+            className="px-4 py-2 border-2 border-border shadow-[2px_2px_0px_0px_#111] focus:outline-none focus:ring-0 text-sm bg-white"
+          >
+            <option value="All">All Folders</option>
+            {uniqueFolders.map(folder => (
+              <option key={folder} value={folder}>{folder}</option>
+            ))}
+          </select>
           <select 
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}

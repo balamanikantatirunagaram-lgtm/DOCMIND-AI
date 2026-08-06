@@ -79,7 +79,7 @@ export function Folders() {
                 <div className="mt-4 pt-4 border-t-2 border-border flex justify-end">
                   <button 
                     className="flex items-center gap-1 font-pixel text-xs font-bold hover:text-blue-600 transition-colors"
-                    onClick={() => navigate(`/documents`)}
+                    onClick={() => navigate(`/documents?folder=${encodeURIComponent(folder)}`)}
                   >
                     View All <ChevronRight size={14} />
                   </button>
