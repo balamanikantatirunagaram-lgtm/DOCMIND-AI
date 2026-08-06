@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma';
 import { StorageService } from './StorageService';
 import { AIService } from './AIService';
 const pdfParse = require('pdf-parse');
 const { pdfToPng } = require('pdf-to-png-converter');
-
-const prisma = new PrismaClient();
 const storageService = new StorageService();
 const aiService = new AIService();
 
