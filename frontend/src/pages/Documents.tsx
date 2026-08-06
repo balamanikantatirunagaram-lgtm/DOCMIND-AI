@@ -58,17 +58,19 @@ export function Documents() {
     if (acceptedFiles.length === 0) return;
     
     setIsUploading(true);
-    const file = acceptedFiles[0];
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', file.name);
 
     try {
-      await api.post('/documents/upload', formData);
+      // Process files in sequence to not overwhelm the backend AI logic
+      for (const file of acceptedFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', file.name);
+        await api.post('/documents/upload', formData);
+      }
       fetchDocuments();
     } catch (error) {
       console.error('Upload failed', error);
-      alert('Failed to upload document');
+      alert('Failed to upload some documents');
     } finally {
       setIsUploading(false);
     }
@@ -127,11 +129,16 @@ export function Documents() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('All');
 
-  const filteredDocuments = documents.filter(doc => 
-    doc.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (doc.summary && doc.summary.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const uniqueTypes = Array.from(new Set(documents.map(d => d.type).filter(Boolean))) as string[];
+
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (doc.summary && doc.summary.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesType = filterType === 'All' || doc.type === filterType;
+    return matchesSearch && matchesType;
+  });
 
   return (
     <div className="space-y-6">
@@ -141,6 +148,16 @@ export function Documents() {
           <p className="text-muted text-sm mt-1">Manage and analyze your document repository.</p>
         </div>
         <div className="flex gap-4">
+          <select 
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="px-4 py-2 border-2 border-border shadow-[2px_2px_0px_0px_#111] focus:outline-none focus:ring-0 text-sm bg-white"
+          >
+            <option value="All">All Types</option>
+            {uniqueTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
           <input 
             type="text" 
             placeholder="Search documents..." 
