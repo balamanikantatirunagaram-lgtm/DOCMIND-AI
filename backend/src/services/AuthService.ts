@@ -104,7 +104,7 @@ export class AuthService {
 
   private generateToken(user: any) {
     return jwt.sign(
-      { id: user.id, email: user.email, organizationId: user.organizationId },
+      { id: user.id, email: user.email, name: user.name, organizationId: user.organizationId },
       process.env.JWT_SECRET || 'fallback_secret',
       { expiresIn: '1d' }
     );

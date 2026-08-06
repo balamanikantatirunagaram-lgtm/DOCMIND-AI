@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, MessageSquare, LogOut, ChevronLeft, ChevronRight, Settings, X } from 'lucide-react';
+import { LayoutDashboard, FileText, MessageSquare, LogOut, ChevronLeft, ChevronRight, Settings, X, Palette, Bell, Shield } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -105,38 +105,70 @@ export function Layout() {
       {/* Settings Modal */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-border w-full max-w-md shadow-[16px_16px_0px_0px_#111]">
-            <div className="flex justify-between items-center p-4 border-b-4 border-border bg-gray-50">
-              <h2 className="font-pixel text-xl font-bold flex items-center gap-2"><Settings size={20} /> Settings</h2>
+          <div className="bg-white border-4 border-border w-full max-w-lg shadow-[16px_16px_0px_0px_#111] max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 z-10 flex justify-between items-center p-4 border-b-4 border-border bg-[#FAFAFA]">
+              <h2 className="font-pixel text-xl font-bold flex items-center gap-2"><Settings size={20} className="text-blue-600" /> Settings</h2>
               <button 
                 onClick={() => setIsSettingsOpen(false)}
-                className="p-1 hover:bg-gray-200 border-2 border-transparent hover:border-border transition-all"
+                className="p-1 hover:bg-gray-200 border-2 border-transparent hover:border-border transition-all bg-white shadow-[2px_2px_0px_0px_#111]"
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              <div>
-                <h3 className="font-pixel font-bold mb-2">Profile</h3>
+            <div className="p-6 space-y-8">
+              {/* Profile Section */}
+              <div className="bg-blue-50 border-4 border-border p-4 shadow-[4px_4px_0px_0px_#111]">
+                <h3 className="font-pixel font-bold mb-4 flex items-center gap-2 text-blue-800"><User size={18} /> Profile</h3>
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 bg-blue-100 border-4 border-border flex items-center justify-center shadow-[4px_4px_0px_0px_#111]">
-                    <span className="font-pixel font-bold text-blue-600 text-2xl">
+                  <div className="h-16 w-16 bg-blue-200 border-4 border-border flex items-center justify-center shadow-[4px_4px_0px_0px_#111]">
+                    <span className="font-pixel font-bold text-blue-700 text-3xl">
                       {userPayload?.name ? userPayload.name.charAt(0).toUpperCase() : 'U'}
                     </span>
                   </div>
                   <div>
-                    <p className="font-pixel font-bold text-lg">{userPayload?.name || 'User'}</p>
+                    <p className="font-pixel font-bold text-xl text-gray-900">{userPayload?.name || 'User'}</p>
                     <p className="font-sans text-gray-600">{userPayload?.email}</p>
                   </div>
                 </div>
               </div>
+
+              {/* Preferences */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-yellow-50 border-4 border-border p-4 shadow-[4px_4px_0px_0px_#111]">
+                   <h3 className="font-pixel font-bold mb-2 flex items-center gap-2 text-yellow-800"><Palette size={18} /> Appearance</h3>
+                   <div className="flex gap-2 mt-4">
+                     <div className="w-8 h-8 bg-white border-2 border-border cursor-pointer shadow-[2px_2px_0px_0px_#111]"></div>
+                     <div className="w-8 h-8 bg-[#111] border-2 border-border cursor-pointer opacity-50"></div>
+                     <div className="w-8 h-8 bg-blue-600 border-2 border-border cursor-pointer opacity-50"></div>
+                   </div>
+                </div>
+
+                <div className="bg-green-50 border-4 border-border p-4 shadow-[4px_4px_0px_0px_#111]">
+                   <h3 className="font-pixel font-bold mb-2 flex items-center gap-2 text-green-800"><Bell size={18} /> Notifications</h3>
+                   <div className="flex items-center justify-between mt-4">
+                     <span className="font-sans text-sm text-green-900 font-bold">Email Alerts</span>
+                     <div className="w-10 h-5 bg-green-500 border-2 border-border relative">
+                       <div className="w-4 h-4 bg-white border-2 border-border absolute right-0 -top-0.5 shadow-[2px_2px_0px_0px_#111]"></div>
+                     </div>
+                   </div>
+                </div>
+              </div>
+
+              {/* Security */}
+              <div className="bg-purple-50 border-4 border-border p-4 shadow-[4px_4px_0px_0px_#111]">
+                <h3 className="font-pixel font-bold mb-2 flex items-center gap-2 text-purple-800"><Shield size={18} /> Security</h3>
+                <p className="font-sans text-sm text-purple-900 mb-4">Manage your account security and sessions.</p>
+                <button className="font-pixel text-sm px-4 py-2 border-2 border-border bg-white shadow-[2px_2px_0px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+                  Change Password
+                </button>
+              </div>
               
-              <div className="pt-4 border-t-2 border-dashed border-gray-300">
+              <div className="pt-4 border-t-4 border-dashed border-gray-300">
                 <button 
                   onClick={handleLogout} 
-                  className="w-full flex items-center justify-center gap-2 font-pixel p-3 border-2 border-border bg-red-100 hover:bg-red-200 text-red-700 shadow-[4px_4px_0px_0px_#111] hover:shadow-[2px_2px_0px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  className="w-full flex items-center justify-center gap-2 font-pixel p-4 border-4 border-border bg-red-400 hover:bg-red-500 text-white shadow-[6px_6px_0px_0px_#111] hover:shadow-[2px_2px_0px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] transition-all text-lg"
                 >
-                  <LogOut size={18} /> Logout
+                  <LogOut size={20} /> LOGOUT
                 </button>
               </div>
             </div>
