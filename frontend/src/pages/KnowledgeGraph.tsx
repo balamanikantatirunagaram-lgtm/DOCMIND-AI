@@ -15,6 +15,7 @@ export function KnowledgeGraph() {
   
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const fgRef = useRef<any>(null);
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -45,6 +46,14 @@ export function KnowledgeGraph() {
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (graphData && fgRef.current) {
+      // Tweak physics to prevent label overlapping
+      fgRef.current.d3Force('charge').strength(-1500);
+      fgRef.current.d3Force('link').distance(250);
+    }
+  }, [graphData]);
 
   const toggleDoc = (id: string) => {
     setSelectedDocIds(prev => {
@@ -155,6 +164,7 @@ export function KnowledgeGraph() {
             </div>
           ) : (
             <ForceGraph2D
+              ref={fgRef}
               width={dimensions.width}
               height={dimensions.height}
               graphData={graphData}
@@ -164,6 +174,10 @@ export function KnowledgeGraph() {
               linkWidth={2}
               linkDirectionalArrowLength={3.5}
               linkDirectionalArrowRelPos={1}
+              onNodeDragEnd={node => {
+                node.fx = node.x;
+                node.fy = node.y;
+              }}
               nodeCanvasObject={(node: any, ctx, globalScale) => {
                 const label = node.name || 'Unknown';
                 const isDocument = node.type === 'Document';
