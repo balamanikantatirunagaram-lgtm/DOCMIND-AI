@@ -1,0 +1,8 @@
+@@ -19,6 +19,7 @@
+   size        Int?
+   folder      String?
+   metadata    Json?
++  isStarred   Boolean  @default(false)
+   createdAt   DateTime @default(now())
+   updatedAt   DateTime @updatedAt
+   entities    ExtractedEntity[]

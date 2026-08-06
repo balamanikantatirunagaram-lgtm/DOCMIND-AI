@@ -22,8 +22,8 @@ interface Document {
   fileUrl: string;
   type?: string;
   folder?: string;
-  summary?: string;
   isStarred?: boolean;
+  summary?: string;
   createdAt: string;
   entities?: Entity[];
 }
@@ -135,10 +135,12 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialFolder = queryParams.get('folder') || 'All';
+  const initialSearch = queryParams.get('search') || '';
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [filterType, setFilterType] = useState('All');
   const [filterFolder, setFilterFolder] = useState(initialFolder);
+  const [filterStarred, setFilterStarred] = useState(false);
   const [editingDoc, setEditingDoc] = useState<Document | null>(null);
 
   useEffect(() => {
@@ -156,7 +158,8 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
       (doc.summary && doc.summary.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesType = filterType === 'All' || doc.type === filterType;
     const matchesFolder = filterFolder === 'All' || (doc.folder || 'Misc') === filterFolder;
-    return matchesSearch && matchesType && matchesFolder;
+    const matchesStarred = !filterStarred || doc.isStarred;
+    return matchesSearch && matchesType && matchesFolder && matchesStarred;
   });
 
   return (
@@ -187,16 +190,25 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
               <option key={type} value={type}>{type}</option>
             ))}
           </select>
-          <input 
-            type="text" 
-            placeholder="Search documents..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-4 py-2 border-2 border-border shadow-[2px_2px_0px_0px_#111] focus:outline-none focus:ring-0 text-sm w-64"
-          />
-          <Button onClick={handleExportCSV} className="flex items-center gap-2">
-            <Download size={16} />
-            Export CSV
+          <Button 
+            variant={filterStarred ? "primary" : "outline"} 
+            onClick={() => setFilterStarred(!filterStarred)}
+            className="flex items-center gap-2"
+          >
+            <Star size={16} className={filterStarred ? "fill-white" : ""} /> Starred
+          </Button>
+          <div className="relative w-full md:w-auto">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search documents..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-64 pl-10 pr-4 py-2 border-2 border-border bg-white focus:outline-none focus:ring-0 focus:border-blue-600 font-sans shadow-pixel-sm"
+            />
+          </div>
+          <Button onClick={handleExportCSV} variant="primary" className="flex items-center gap-2">
+            <Download size={16} /> Export CSV
           </Button>
         </div>
       </div>
@@ -257,6 +269,12 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
                         <div className="flex items-center gap-2">
                           <button onClick={() => toggleRow(doc.id)} className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all">
                             {expandedRows.has(doc.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleToggleStar(doc.id, !!doc.isStarred); }} 
+                            className="p-1 hover:bg-yellow-50 transition-colors"
+                          >
+                            <Star size={16} className={doc.isStarred ? "fill-yellow-400 text-yellow-500" : "text-gray-300 hover:text-yellow-400"} />
                           </button>
                           <FileText size={16} className="text-blue-600 shrink-0" />
                           <p className="font-medium text-gray-900">{doc.title}</p>

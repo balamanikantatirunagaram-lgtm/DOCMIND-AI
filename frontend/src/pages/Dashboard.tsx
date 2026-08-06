@@ -12,6 +12,7 @@ export function Dashboard() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [documents, setDocuments] = React.useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [chats, setChats] = React.useState<any[]>([]);
   const totalMessages = React.useMemo(() => {
     return chats.reduce((sum, chat) => sum + (chat.messages?.length || 0), 0);
@@ -87,9 +88,19 @@ export function Dashboard() {
           <p className="text-muted text-sm mt-1">Welcome back, Admin. Here's what's happening.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate('/documents')}>
-            <Search size={16} /> Search
-          </Button>
+          <form 
+            onSubmit={(e) => { e.preventDefault(); navigate(`/documents?search=${encodeURIComponent(searchQuery)}`); }}
+            className="relative flex items-center"
+          >
+            <Search className="absolute left-3 text-gray-400" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-48 pl-9 pr-4 py-2 border-2 border-border shadow-[2px_2px_0px_0px_#111] focus:outline-none focus:ring-0 text-sm font-sans"
+            />
+          </form>
           <input 
             type="file" 
             ref={fileInputRef} 
