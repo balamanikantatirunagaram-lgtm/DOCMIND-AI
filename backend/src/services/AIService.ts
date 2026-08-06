@@ -75,10 +75,10 @@ export class AIService {
   }
 
   public async chat(messages: { role: string; content: string }[]): Promise<string> {
-    return this.callNvidiaApi(messages);
+    return this.callNvidiaApi(messages, 'meta/llama-3.1-8b-instruct');
   }
 
-  private async callNvidiaApi(messages: any[], model: string = 'nvidia/nemotron-3-super-120b-a12b'): Promise<string> {
+  private async callNvidiaApi(messages: any[], model: string = 'meta/llama-3.1-8b-instruct'): Promise<string> {
     const apiKey = process.env.NVIDIA_API_KEY;
     if (!apiKey) {
       throw new Error('NVIDIA_API_KEY is not set');

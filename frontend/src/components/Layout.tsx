@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, MessageSquare, LogOut, ChevronLeft, ChevronRight, Settings, X, Palette, Bell, Shield, User } from 'lucide-react';
+import { LayoutDashboard, FileText, MessageSquare, LogOut, ChevronLeft, ChevronRight, Settings, X, Palette, Bell, Shield, User, Folder } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -32,6 +32,7 @@ export function Layout() {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Documents', path: '/documents', icon: FileText },
+    { name: 'Folders', path: '/folders', icon: Folder },
     { name: 'Chat', path: '/chat', icon: MessageSquare },
   ];
 

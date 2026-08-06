@@ -27,7 +27,7 @@ interface Document {
   entities?: Entity[];
 }
 
-export function Documents() {
+export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

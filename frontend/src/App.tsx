@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Documents } from './pages/Documents';
+import { Folders } from './pages/Folders';
 import { Chat } from './pages/Chat';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -22,6 +23,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/documents" element={<Documents />} />
+            <Route path="/folders" element={<Folders />} />
             <Route path="/chat" element={<Chat />} />
           </Route>
         </Routes>
