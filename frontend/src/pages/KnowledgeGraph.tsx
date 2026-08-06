@@ -25,28 +25,29 @@ export function KnowledgeGraph() {
   }, []);
 
   useEffect(() => {
-    const updateDimensions = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight
-        });
-      }
-    };
+    if (!containerRef.current) return;
 
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setDimensions({ width, height });
+        }
+      }
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="space-y-6 flex flex-col h-full h-[calc(100vh-9rem)]">
+    <div className="space-y-6 flex flex-col h-[calc(100vh-9rem)] w-full">
       <div>
         <h1 className="text-3xl font-bold font-pixel mb-2">Knowledge Graph</h1>
         <p className="text-muted">A visual map connecting documents and extracted entities across your organization.</p>
       </div>
 
-      <Card className="flex-1 p-0 overflow-hidden relative" ref={containerRef}>
+      <Card className="flex-1 p-0 overflow-hidden relative min-h-0" ref={containerRef}>
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
             <div className="flex flex-col items-center gap-4">

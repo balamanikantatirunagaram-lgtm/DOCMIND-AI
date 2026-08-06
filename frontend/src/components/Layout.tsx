@@ -184,8 +184,8 @@ export function Layout() {
           <div className="flex-1" />
           {/* Header actions (optional) */}
         </header>
-        <div className="flex-1 overflow-auto">
-          <div className="p-4 sm:p-8 min-w-min">
+        <div className="flex-1 overflow-auto flex flex-col">
+          <div className="p-4 sm:p-8 min-w-min flex-1 flex flex-col">
             <Outlet />
           </div>
         </div>
