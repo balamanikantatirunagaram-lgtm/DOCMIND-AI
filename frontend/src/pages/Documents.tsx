@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { UploadCloud, FileText, Download, Eye, Loader2, Trash2, ChevronRight, ChevronDown, Star } from 'lucide-react';
+import { Search, Plus, Filter, FileText, Download, ChevronDown, ChevronRight, UploadCloud, Loader2, Star, Eye, Trash2, Folder } from 'lucide-react';
 import React from 'react';
 import { api } from '../services/api';
 
@@ -20,8 +20,8 @@ interface Document {
   title: string;
   fileUrl: string;
   type?: string;
-  summary?: string;
   folder?: string;
+  summary?: string;
   isStarred?: boolean;
   createdAt: string;
   entities?: Entity[];
@@ -208,6 +208,7 @@ export function Documents() {
             <thead className="text-xs uppercase bg-gray-100 border-b border-border font-pixel">
               <tr>
                 <th className="px-6 py-4 border-r border-border">Name</th>
+                <th className="px-6 py-4 border-r border-border w-32">Folder</th>
                 <th className="px-6 py-4 border-r border-border w-32">Type</th>
                 <th className="px-6 py-4 border-r border-border w-32">Date</th>
                 <th className="px-6 py-4 border-r border-border w-24">Status</th>
@@ -217,11 +218,11 @@ export function Documents() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-muted">Loading documents...</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted">Loading documents...</td>
                 </tr>
               ) : filteredDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-muted">No documents found. Upload one to get started!</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted">No documents found. Upload one to get started!</td>
                 </tr>
               ) : (
                 filteredDocuments.map((doc, idx) => (
@@ -234,6 +235,12 @@ export function Documents() {
                           </button>
                           <FileText size={16} className="text-blue-600 shrink-0" />
                           <p className="font-medium text-gray-900">{doc.title}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border">
+                        <div className="flex items-center gap-2">
+                          <Folder size={14} className="text-yellow-600" />
+                          <span className="font-sans text-sm text-gray-700">{doc.folder || 'Misc'}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 border-r border-border">
@@ -291,7 +298,7 @@ export function Documents() {
                     </tr>
                     {expandedRows.has(doc.id) && (
                       <tr className={`bg-gray-50 border-b border-border ${idx === filteredDocuments.length - 1 ? 'border-b-0' : ''}`}>
-                        <td colSpan={5} className="px-6 py-4">
+                        <td colSpan={6} className="px-6 py-4">
                           <div className="ml-8">
                             <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-pixel">AI Analysis</h4>
                             

@@ -11,8 +11,11 @@ export class AIService {
     return response;
   }
 
-  public async classifyAndSummarizeDocument(text: string): Promise<{ type: string, summary: string }> {
-    const prompt = `You are a document analyzer. Analyze the following document text and provide a JSON response with exactly two keys: "type" (a short string like "Invoice", "Contract", "Resume", "Medical Report", "Financial Statement", or "Other") and "summary" (a 1-2 sentence concise summary of the document).
+  public async classifyAndSummarizeDocument(text: string): Promise<{ type: string, summary: string, folder: string }> {
+    const prompt = `You are a document analyzer. Analyze the following document text and provide a JSON response with exactly three keys: 
+    1. "type" (a short string like "Invoice", "Contract", "Resume", "Medical Report", "Financial Statement", or "Other")
+    2. "folder" (a category folder name to organize this into, exactly one of: "Finance", "HR", "Legal", "Operations", or "Misc")
+    3. "summary" (a 1-2 sentence concise summary of the document).
     
     Document text: ${text.substring(0, 6000)}
     
@@ -25,11 +28,13 @@ export class AIService {
     try {
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (!parsed.folder) parsed.folder = "Misc";
+        return parsed;
       }
-      return { type: "Other", summary: response };
+      return { type: "Other", summary: response, folder: "Misc" };
     } catch (e) {
-      return { type: "Other", summary: "Failed to parse AI response." };
+      return { type: "Other", summary: "Failed to parse AI response.", folder: "Misc" };
     }
   }
 

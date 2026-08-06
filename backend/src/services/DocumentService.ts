@@ -60,6 +60,7 @@ export class DocumentService {
 
     let type = null;
     let summary = null;
+    let folder = null;
     let entities: any[] = [];
 
     if (extractedText && extractedText.length > 50) {
@@ -68,6 +69,7 @@ export class DocumentService {
         const aiResult = await aiService.classifyAndSummarizeDocument(extractedText);
         type = aiResult.type;
         summary = aiResult.summary;
+        folder = aiResult.folder;
 
         console.log('Extracting structured data entities...');
         entities = await aiService.extractEntities(extractedText);
@@ -83,6 +85,7 @@ export class DocumentService {
         extractedText,
         type,
         summary,
+        folder,
         uploaderId,
         organizationId,
         entities: {
