@@ -181,4 +181,54 @@ export class DocumentService {
       include: { entities: true }
     });
   }
+
+  public async getGraphData(organizationId: string) {
+    const documents = await prisma.document.findMany({
+      where: { organizationId },
+      include: { entities: true },
+    });
+
+    const nodes: any[] = [];
+    const links: any[] = [];
+    
+    // Map to keep track of entity values to link documents that share them
+    const entityNodeMap = new Map<string, string>(); // value -> entityNodeId
+
+    documents.forEach(doc => {
+      // Add document node
+      nodes.push({
+        id: `doc-${doc.id}`,
+        name: doc.title,
+        type: 'Document',
+        val: 20 // node size
+      });
+
+      doc.entities.forEach(entity => {
+        const entityValue = entity.value.trim().toLowerCase();
+        if (!entityValue) return;
+        
+        const entityNodeId = `entity-${entityValue}`;
+        
+        // Add entity node if it doesn't exist
+        if (!entityNodeMap.has(entityValue)) {
+          entityNodeMap.set(entityValue, entityNodeId);
+          nodes.push({
+            id: entityNodeId,
+            name: entity.value, // Original casing
+            type: entity.type,
+            val: 10
+          });
+        }
+
+        // Link document to entity
+        links.push({
+          source: `doc-${doc.id}`,
+          target: entityNodeId,
+          label: 'has_entity'
+        });
+      });
+    });
+
+    return { nodes, links };
+  }
 }

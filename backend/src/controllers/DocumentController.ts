@@ -95,7 +95,7 @@ export class DocumentController {
       const { id } = req.params;
       const { title, folder, isStarred } = req.body;
       
-      const updatedDocument = await documentService.updateDocument(id, req.user.organizationId, {
+      const updatedDocument = await documentService.updateDocument(id as string, req.user.organizationId, {
         title,
         folder,
         isStarred
@@ -126,7 +126,7 @@ export class DocumentController {
         return;
       }
 
-      const updatedDocument = await documentService.updateEntities(id, req.user.organizationId, entities);
+      const updatedDocument = await documentService.updateEntities(id as string, req.user.organizationId, entities);
       
       res.status(200).json(updatedDocument);
     } catch (error: any) {
@@ -135,6 +135,20 @@ export class DocumentController {
       } else {
         res.status(500).json({ error: error.message });
       }
+    }
+  }
+
+  public async getGraphData(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      
+      const graphData = await documentService.getGraphData(req.user.organizationId);
+      res.status(200).json(graphData);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   }
 }
