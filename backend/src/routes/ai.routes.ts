@@ -13,3 +13,4 @@ router.get('/chats/:id', aiController.getChatById.bind(aiController));
 router.post('/chat', aiController.chat.bind(aiController));
 
 export default router;
+

@@ -88,7 +88,7 @@ export class AIController {
       res.status(500).json({ error: error.message });
     }
   }
-  public async getChats(req: AuthRequest, res: Response): Promise<void> {
+  public async getChats(req: AuthRequest, res: Response): Promise<void> { console.log("HITTING GETCHATS");
     try {
       if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
       const chats = await prisma.chat.findMany({
