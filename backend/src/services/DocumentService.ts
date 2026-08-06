@@ -27,10 +27,13 @@ export class DocumentService {
         // If it's a scanned PDF (no text), use OCR
         if (!extractedText || extractedText.trim().length < 50) {
           console.log('Running AI Vision OCR on scanned PDF...');
-          const pngPages = await pdfToPng(file.buffer, { viewportScale: 2.0 });
+          const pngPages = await pdfToPng(file.buffer, { 
+            viewportScale: 2.0,
+            pagesToProcess: [1, 2, 3] // Only convert first 3 pages to PNG to save massive memory/time
+          });
           let ocrText = '';
-          // Only OCR first 3 pages to save time/memory for large PDFs
-          for (const page of pngPages.slice(0, 3)) {
+          // Send the generated PNG pages to AI Vision
+          for (const page of pngPages) {
             const base64Image = page.content.toString('base64');
             const text = await aiService.extractTextFromImage(base64Image);
             ocrText += text + '\n';
