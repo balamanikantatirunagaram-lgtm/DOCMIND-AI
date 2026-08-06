@@ -52,8 +52,25 @@ export class AIController {
         },
       });
 
-      const messagesForAI = chat.messages.map(m => ({ role: m.role, content: m.content }));
-      messagesForAI.push({ role: 'user', content: message });
+      const recentDocs = await prisma.document.findMany({
+        where: { uploaderId: req.user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 3
+      });
+      let systemPrompt = "You are DocMind AI, an intelligent document processing assistant. Use the provided document context to answer questions accurately. If the user refers to a document or element, analyze the text provided below.";
+      if (recentDocs.length > 0) {
+        systemPrompt += "\n\nHere are the most recently uploaded documents for context:\n";
+        for (const doc of recentDocs) {
+          systemPrompt += `\n--- Document: ${doc.title} ---\n`;
+          systemPrompt += doc.extractedText ? doc.extractedText.substring(0, 10000) : "No text extracted or it was an image.";
+        }
+      }
+
+      const messagesForAI = [
+        { role: 'system', content: systemPrompt },
+        ...chat.messages.map(m => ({ role: m.role, content: m.content })),
+        { role: 'user', content: message }
+      ];
 
       const aiResponse = await aiService.chat(messagesForAI);
 
