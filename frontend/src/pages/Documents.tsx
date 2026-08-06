@@ -236,7 +236,7 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
                 <th className="px-6 py-4 border-r border-border w-32">Folder</th>
                 <th className="px-6 py-4 border-r border-border w-32">Type</th>
                 <th className="px-6 py-4 border-r border-border w-32">Date</th>
-                <th className="px-6 py-4 border-r border-border w-24">Status</th>
+                <th className="px-6 py-4 border-r border-border w-32">Status</th>
                 <th className="px-6 py-4 text-right w-32">Actions</th>
               </tr>
             </thead>
@@ -291,14 +291,14 @@ export function Documents({ view = 'list' }: { view?: 'list' | 'folders' }) {
 
                           if (hasLowConfidence || missingFields.length > 0) {
                             return (
-                              <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-orange-100 text-orange-800 border-orange-800" title={missingFields.length > 0 ? `Missing: ${missingFields.join(', ')}` : 'Low Confidence Items'}>
+                              <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-orange-100 text-orange-800 border-orange-800" title={missingFields.length > 0 ? `Missing: ${missingFields.join(', ')}` : 'Low Confidence Items'}>
                                 Needs Review
                               </span>
                             );
                           }
                           
                           return (
-                            <span className="px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-green-100 text-green-800 border-green-800">
+                            <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold font-pixel border shadow-[1px_1px_0px_0px_#111] bg-green-100 text-green-800 border-green-800">
                               Ready
                             </span>
                           );
