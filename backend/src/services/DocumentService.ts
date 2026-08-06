@@ -1,11 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import { StorageService } from './StorageService';
+import { AIService } from './AIService';
 const pdfParse = require('pdf-parse');
-const Tesseract = require('tesseract.js');
 const { pdfToPng } = require('pdf-to-png-converter');
 
 const prisma = new PrismaClient();
 const storageService = new StorageService();
+const aiService = new AIService();
 
 export class DocumentService {
   public async uploadDocument(
@@ -25,19 +26,21 @@ export class DocumentService {
         
         // If it's a scanned PDF (no text), use OCR
         if (!extractedText || extractedText.trim().length < 50) {
-          console.log('Running OCR on scanned PDF...');
+          console.log('Running AI Vision OCR on scanned PDF...');
           const pngPages = await pdfToPng(file.buffer, { viewportScale: 2.0 });
           let ocrText = '';
           // Only OCR first 3 pages to save time/memory for large PDFs
           for (const page of pngPages.slice(0, 3)) {
-            const { data: { text } } = await Tesseract.recognize(page.content, 'eng');
+            const base64Image = page.content.toString('base64');
+            const text = await aiService.extractTextFromImage(base64Image);
             ocrText += text + '\n';
           }
           extractedText = ocrText;
         }
       } else if (file.mimetype.startsWith('image/')) {
-        console.log('Running OCR on image...');
-        const { data: { text } } = await Tesseract.recognize(file.buffer, 'eng');
+        console.log('Running AI Vision OCR on image...');
+        const base64Image = file.buffer.toString('base64');
+        const text = await aiService.extractTextFromImage(base64Image);
         extractedText = text;
       } else if (
         file.mimetype.startsWith('text/') || 

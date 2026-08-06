@@ -11,11 +11,24 @@ export class AIService {
     return response;
   }
 
+  public async extractTextFromImage(base64Image: string): Promise<string> {
+    const messages = [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Extract all the text from this image exactly as written. Preserve the layout and structure as much as possible. Do not include any conversational filler.' },
+          { type: 'image_url', image_url: { url: `data:image/png;base64,${base64Image}` } }
+        ]
+      }
+    ];
+    return this.callNvidiaApi(messages as any, 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
+  }
+
   public async chat(messages: { role: string; content: string }[]): Promise<string> {
     return this.callNvidiaApi(messages);
   }
 
-  private async callNvidiaApi(messages: { role: string; content: string }[]): Promise<string> {
+  private async callNvidiaApi(messages: any[], model: string = 'nvidia/nemotron-3-super-120b-a12b'): Promise<string> {
     const apiKey = process.env.NVIDIA_API_KEY;
     if (!apiKey) {
       throw new Error('NVIDIA_API_KEY is not set');
@@ -25,7 +38,7 @@ export class AIService {
       const response = await axios.post(
         this.apiUrl,
         {
-          model: 'nvidia/nemotron-3-super-120b-a12b',
+          model: model,
           messages: messages,
           max_tokens: 1024,
         },
