@@ -8,6 +8,7 @@ import { Loader2, CheckSquare, Square, BrainCircuit } from 'lucide-react';
 export function KnowledgeGraph() {
   const [graphData, setGraphData] = useState<{ nodes: any[]; links: any[] } | null>(null);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [serverFolders, setServerFolders] = useState<any[]>([]);
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
   
   const [isLoading, setIsLoading] = useState(false);
@@ -18,17 +19,21 @@ export function KnowledgeGraph() {
   const fgRef = useRef<any>(null);
 
   useEffect(() => {
-    const fetchDocuments = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/documents');
-        setDocuments(res.data);
+        const [docRes, foldRes] = await Promise.all([
+          api.get('/documents'),
+          api.get('/folders')
+        ]);
+        setDocuments(docRes.data);
+        setServerFolders(foldRes.data);
       } catch (err) {
-        console.error('Failed to fetch documents for graph', err);
+        console.error('Failed to fetch data for graph', err);
       } finally {
         setIsDocsLoading(false);
       }
     };
-    fetchDocuments();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -64,7 +69,9 @@ export function KnowledgeGraph() {
     });
   };
 
-  const folders = Array.from(new Set(documents.map(d => d.folder || 'Misc')));
+  const docFolders = documents.map(d => d.folder).filter(Boolean) as string[];
+  const dbFolders = serverFolders.map(f => f.name);
+  const folders = Array.from(new Set([...docFolders, ...dbFolders, 'Misc'])).filter(f => f !== '');
 
   const handleSelectFolder = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const folder = e.target.value;

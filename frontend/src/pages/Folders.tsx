@@ -16,6 +16,7 @@ interface Document {
 
 export function Folders() {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [serverFolders, setServerFolders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -24,21 +25,27 @@ export function Folders() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchDocuments();
+    fetchData();
   }, []);
 
-  const fetchDocuments = async () => {
+  const fetchData = async () => {
     try {
-      const res = await api.get('/documents');
-      setDocuments(res.data);
+      const [docRes, foldRes] = await Promise.all([
+        api.get('/documents'),
+        api.get('/folders')
+      ]);
+      setDocuments(docRes.data);
+      setServerFolders(foldRes.data);
     } catch (error) {
-      console.error('Failed to fetch documents', error);
+      console.error('Failed to fetch data', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const folders = Array.from(new Set(documents.map(d => d.folder || 'Misc'))).filter(f => f !== '');
+  const docFolders = documents.map(d => d.folder).filter(Boolean) as string[];
+  const dbFolders = serverFolders.map(f => f.name);
+  const folders = Array.from(new Set([...docFolders, ...dbFolders, 'Misc'])).filter(f => f !== '');
 
   const toggleDoc = (id: string) => {
     setSelectedDocIds(prev => {
@@ -50,19 +57,25 @@ export function Folders() {
   };
 
   const handleCreateFolder = async () => {
-    if (!newFolderName.trim() || selectedDocIds.size === 0) return;
+    if (!newFolderName.trim()) return;
     setIsSaving(true);
     
     try {
-      const docIdsArray = Array.from(selectedDocIds);
-      await Promise.all(
-        docIdsArray.map(id => api.patch(`/documents/${id}`, { folder: newFolderName.trim() }))
-      );
+      // 1. Create the folder in the db so it exists even if empty
+      await api.post('/folders', { name: newFolderName.trim() });
+      
+      // 2. Assign any selected documents to this folder
+      if (selectedDocIds.size > 0) {
+        const docIdsArray = Array.from(selectedDocIds);
+        await Promise.all(
+          docIdsArray.map(id => api.patch(`/documents/${id}`, { folder: newFolderName.trim() }))
+        );
+      }
       
       setIsModalOpen(false);
       setNewFolderName('');
       setSelectedDocIds(new Set());
-      await fetchDocuments();
+      await fetchData();
     } catch (error) {
       console.error('Failed to create folder', error);
       alert('Error creating folder');
@@ -190,11 +203,11 @@ export function Folders() {
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
               <Button 
                 onClick={handleCreateFolder} 
-                disabled={!newFolderName.trim() || selectedDocIds.size === 0 || isSaving}
+                disabled={!newFolderName.trim() || isSaving}
                 className="flex items-center gap-2"
               >
                 {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Folder size={16} />}
-                Create & Move Files
+                {selectedDocIds.size > 0 ? 'Create & Move Files' : 'Create Empty Folder'}
               </Button>
             </div>
           </div>

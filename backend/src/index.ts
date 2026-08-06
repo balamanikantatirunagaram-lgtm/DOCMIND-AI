@@ -6,6 +6,7 @@ import { config } from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import documentRoutes from './routes/documents.routes';
 import aiRoutes from './routes/ai.routes';
+import folderRoutes from './routes/folders.routes';
 
 config();
 
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/folders', folderRoutes);
 app.use('/api/ai', aiRoutes);
 
 app.get('/health', (req, res) => {
