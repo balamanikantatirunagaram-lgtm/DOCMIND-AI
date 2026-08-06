@@ -87,7 +87,7 @@ export function Dashboard() {
           <p className="text-muted text-sm mt-1">Welcome back, Admin. Here's what's happening.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate('/documents')}>
             <Search size={16} /> Search
           </Button>
           <input 
