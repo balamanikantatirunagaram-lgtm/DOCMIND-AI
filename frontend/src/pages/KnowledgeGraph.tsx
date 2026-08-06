@@ -64,6 +64,19 @@ export function KnowledgeGraph() {
     });
   };
 
+  const folders = Array.from(new Set(documents.map(d => d.folder || 'Misc')));
+
+  const handleSelectFolder = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const folder = e.target.value;
+    if (!folder) return;
+    const folderDocs = documents.filter(d => (d.folder || 'Misc') === folder);
+    const newSelected = new Set(selectedDocIds);
+    folderDocs.forEach(d => newSelected.add(d.id));
+    setSelectedDocIds(newSelected);
+    // Reset the select after choosing
+    e.target.value = "";
+  };
+
   const handleGenerateGraph = async () => {
     if (selectedDocIds.size === 0) return;
     
@@ -98,6 +111,27 @@ export function KnowledgeGraph() {
             <span className="text-xs font-sans font-bold bg-blue-100 text-blue-800 px-2 py-1 border-2 border-border shadow-[2px_2px_0px_0px_#111]">
               {selectedDocIds.size} Selected
             </span>
+          </div>
+
+          <div className="p-4 border-b-2 border-border bg-white shrink-0">
+            <select 
+              className="w-full border-2 border-border p-2 font-sans text-sm focus:outline-none focus:shadow-[2px_2px_0px_0px_#111] transition-shadow cursor-pointer"
+              onChange={handleSelectFolder}
+              defaultValue=""
+            >
+              <option value="" disabled>+ Add entire folder...</option>
+              {folders.map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+            {selectedDocIds.size > 0 && (
+              <button 
+                onClick={() => setSelectedDocIds(new Set())}
+                className="mt-2 text-xs font-pixel text-red-600 hover:underline"
+              >
+                Clear Selection
+              </button>
+            )}
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
