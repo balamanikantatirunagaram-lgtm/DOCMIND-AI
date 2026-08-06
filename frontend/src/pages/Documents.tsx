@@ -6,6 +6,8 @@ import { UploadCloud, FileText, Download, Eye, Loader2, Trash2, ChevronRight, Ch
 import React from 'react';
 import { api } from '../services/api';
 
+import { EditEntitiesModal } from '../components/EditEntitiesModal';
+
 interface Entity {
   id: string;
   type: string;
@@ -131,6 +133,7 @@ export function Documents() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
+  const [editingDoc, setEditingDoc] = useState<Document | null>(null);
 
   const uniqueTypes = Array.from(new Set(documents.map(d => d.type).filter(Boolean))) as string[];
 
@@ -313,7 +316,17 @@ export function Documents() {
                               ) : null;
                             })()}
 
-                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-pixel">Extracted Data Points</h4>
+                            <div className="flex justify-between items-center mb-2">
+                              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider font-pixel">Extracted Data Points</h4>
+                              <Button 
+                                variant="outline" 
+                                className="text-xs py-1 px-2 flex items-center gap-1 h-auto"
+                                onClick={() => setEditingDoc(doc)}
+                              >
+                                Edit Extractions
+                              </Button>
+                            </div>
+                            
                             {doc.entities && doc.entities.length > 0 ? (
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {doc.entities.map((entity, i) => (
@@ -350,6 +363,24 @@ export function Documents() {
           </table>
         </div>
       </Card>
+
+      {editingDoc && (
+        <EditEntitiesModal 
+          document={editingDoc}
+          onClose={() => setEditingDoc(null)}
+          onSave={async (newEntities) => {
+            try {
+              const res = await api.put(`/documents/${editingDoc.id}/entities`, { entities: newEntities });
+              // Update local state
+              setDocuments(docs => docs.map(d => d.id === editingDoc.id ? res.data : d));
+              setEditingDoc(null);
+            } catch (error) {
+              console.error('Failed to save entities', error);
+              alert('Failed to save entities');
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

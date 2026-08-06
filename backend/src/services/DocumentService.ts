@@ -147,4 +147,35 @@ export class DocumentService {
       include: { entities: true }
     });
   }
+
+  public async updateEntities(documentId: string, organizationId: string, entities: Array<{ type: string, value: string, confidence?: number }>) {
+    const document = await prisma.document.findFirst({
+      where: { id: documentId, organizationId },
+    });
+
+    if (!document) {
+      throw new Error('Document not found');
+    }
+
+    // Delete existing entities and recreate to ensure a clean sync
+    await prisma.extractedEntity.deleteMany({
+      where: { documentId }
+    });
+
+    if (entities.length > 0) {
+      await prisma.extractedEntity.createMany({
+        data: entities.map(e => ({
+          documentId,
+          type: e.type,
+          value: e.value,
+          confidence: e.confidence || 1.0 // Manual edits get 100% confidence
+        }))
+      });
+    }
+
+    return prisma.document.findUnique({
+      where: { id: documentId },
+      include: { entities: true }
+    });
+  }
 }

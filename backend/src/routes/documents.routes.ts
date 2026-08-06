@@ -15,5 +15,6 @@ router.get('/', documentController.getDocuments.bind(documentController));
 router.get('/:id', documentController.getDocumentById.bind(documentController));
 router.delete('/:id', documentController.deleteDocument.bind(documentController));
 router.patch('/:id', documentController.updateDocument.bind(documentController));
+router.put('/:id/entities', documentController.updateEntities.bind(documentController));
 
 export default router;
