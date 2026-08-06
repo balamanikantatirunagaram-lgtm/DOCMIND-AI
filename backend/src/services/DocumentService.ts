@@ -131,4 +131,20 @@ export class DocumentService {
 
     return true;
   }
+
+  public async updateDocument(id: string, organizationId: string, data: { title?: string, folder?: string, isStarred?: boolean }) {
+    const document = await prisma.document.findFirst({
+      where: { id, organizationId },
+    });
+
+    if (!document) {
+      throw new Error('Document not found');
+    }
+
+    return prisma.document.update({
+      where: { id },
+      data,
+      include: { entities: true }
+    });
+  }
 }

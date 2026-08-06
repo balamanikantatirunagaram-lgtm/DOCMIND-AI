@@ -84,4 +84,30 @@ export class DocumentController {
       }
     }
   }
+
+  public async updateDocument(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const { id } = req.params;
+      const { title, folder, isStarred } = req.body;
+      
+      const updatedDocument = await documentService.updateDocument(id, req.user.organizationId, {
+        title,
+        folder,
+        isStarred
+      });
+      
+      res.status(200).json(updatedDocument);
+    } catch (error: any) {
+      if (error.message === 'Document not found') {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  }
 }

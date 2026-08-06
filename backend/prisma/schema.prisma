@@ -36,6 +36,8 @@ model Document {
   extractedText  String?
   type           String?           // e.g., Invoice, Contract, Resume, Report
   summary        String?           // AI generated summary of the document
+  folder         String?           // For automatic folder organization
+  isStarred      Boolean           @default(false)
   organizationId String
   organization   Organization      @relation(fields: [organizationId], references: [id])
   uploaderId     String

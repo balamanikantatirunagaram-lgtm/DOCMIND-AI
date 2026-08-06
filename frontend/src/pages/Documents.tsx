@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { UploadCloud, FileText, Download, Eye, Loader2, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
+import { UploadCloud, FileText, Download, Eye, Loader2, Trash2, ChevronRight, ChevronDown, Star } from 'lucide-react';
 import React from 'react';
 import { api } from '../services/api';
 
@@ -18,6 +18,8 @@ interface Document {
   fileUrl: string;
   type?: string;
   summary?: string;
+  folder?: string;
+  isStarred?: boolean;
   createdAt: string;
   entities?: Entity[];
 }
@@ -83,6 +85,15 @@ export function Documents() {
     }
   };
 
+  const handleToggleStar = async (id: string, currentStatus: boolean) => {
+    try {
+      const response = await api.patch(`/documents/${id}`, { isStarred: !currentStatus });
+      setDocuments(docs => docs.map(doc => doc.id === id ? { ...doc, isStarred: !currentStatus } : doc));
+    } catch (error) {
+      console.error('Toggle star failed', error);
+    }
+  };
+
   const handleExportCSV = () => {
     const headers = ['Document ID', 'Title', 'Date Uploaded', 'Entity Type', 'Entity Value'];
     const rows: string[][] = [];
@@ -115,6 +126,13 @@ export function Documents() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredDocuments = documents.filter(doc => 
+    doc.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (doc.summary && doc.summary.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -122,10 +140,19 @@ export function Documents() {
           <h1 className="text-3xl font-pixel font-bold">Documents</h1>
           <p className="text-muted text-sm mt-1">Manage and analyze your document repository.</p>
         </div>
-        <Button onClick={handleExportCSV} className="flex items-center gap-2">
-          <Download size={16} />
-          Export CSV
-        </Button>
+        <div className="flex gap-4">
+          <input 
+            type="text" 
+            placeholder="Search documents..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-2 border-2 border-border shadow-[2px_2px_0px_0px_#111] focus:outline-none focus:ring-0 text-sm w-64"
+          />
+          <Button onClick={handleExportCSV} className="flex items-center gap-2">
+            <Download size={16} />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       <Card 
@@ -171,14 +198,14 @@ export function Documents() {
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-muted">Loading documents...</td>
                 </tr>
-              ) : documents.length === 0 ? (
+              ) : filteredDocuments.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-muted">No documents found. Upload one to get started!</td>
                 </tr>
               ) : (
-                documents.map((doc, idx) => (
+                filteredDocuments.map((doc, idx) => (
                   <React.Fragment key={doc.id}>
-                    <tr className={`border-b border-border hover:bg-gray-50 ${idx === documents.length - 1 && !expandedRows.has(doc.id) ? 'border-b-0' : ''}`}>
+                    <tr className={`border-b border-border hover:bg-gray-50 ${idx === filteredDocuments.length - 1 && !expandedRows.has(doc.id) ? 'border-b-0' : ''}`}>
                       <td className="px-6 py-4 border-r border-border">
                         <div className="flex items-center gap-2">
                           <button onClick={() => toggleRow(doc.id)} className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all">
@@ -205,10 +232,13 @@ export function Documents() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex">
+                          <button onClick={() => handleToggleStar(doc.id, !!doc.isStarred)} className={`p-1 border border-transparent transition-all inline-flex ${doc.isStarred ? 'text-yellow-500 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-200 hover:text-gray-600'}`}>
+                            <Star size={16} fill={doc.isStarred ? "currentColor" : "none"} />
+                          </button>
+                          <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex text-gray-600">
                             <Eye size={16} />
                           </a>
-                          <a href={doc.fileUrl} download className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex">
+                          <a href={doc.fileUrl} download className="p-1 hover:bg-gray-200 border border-transparent hover:border-border transition-all inline-flex text-gray-600">
                             <Download size={16} />
                           </a>
                           <button onClick={() => handleDelete(doc.id)} className="p-1 hover:bg-red-100 text-red-600 border border-transparent hover:border-red-600 transition-all inline-flex">
@@ -218,7 +248,7 @@ export function Documents() {
                       </td>
                     </tr>
                     {expandedRows.has(doc.id) && (
-                      <tr className={`bg-gray-50 border-b border-border ${idx === documents.length - 1 ? 'border-b-0' : ''}`}>
+                      <tr className={`bg-gray-50 border-b border-border ${idx === filteredDocuments.length - 1 ? 'border-b-0' : ''}`}>
                         <td colSpan={5} className="px-6 py-4">
                           <div className="ml-8">
                             <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-pixel">AI Analysis</h4>
