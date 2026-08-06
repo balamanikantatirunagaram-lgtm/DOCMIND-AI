@@ -81,12 +81,12 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-pixel font-bold">Dashboard</h1>
           <p className="text-muted text-sm mt-1">Welcome back, Admin. Here's what's happening.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate('/documents')}>
             <Search size={16} /> Search
           </Button>
