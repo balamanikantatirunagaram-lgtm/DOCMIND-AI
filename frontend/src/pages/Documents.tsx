@@ -180,7 +180,7 @@ export function Documents() {
                     </td>
                     <td className="px-6 py-4 border-r border-border">
                       {doc.type ? (
-                        <span className="px-2 py-1 text-xs font-pixel font-bold bg-blue-100 text-blue-800 border shadow-[1px_1px_0px_0px_#111]">
+                        <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-pixel font-bold bg-blue-100 text-blue-800 border border-blue-800 shadow-[2px_2px_0px_0px_rgba(30,64,175,1)]">
                           {doc.type}
                         </span>
                       ) : (
