@@ -162,24 +162,19 @@ export class AIService {
 
       let contextStr = documents.map(d => `Document: ${d.title}\nType: ${d.type}\nSummary: ${d.summary}\n---`).join('\n');
 
-      const response = await this.client.post('/chat/completions', {
-        model: 'meta/llama-3.1-70b-instruct',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an elite business analyst. Your job is to read the summaries of the company's recent documents and generate a brilliant, highly structured "Executive Insight Report" in Markdown format.
+      const response = await this.callNvidiaApi([
+        {
+          role: 'system',
+          content: `You are an elite business analyst. Your job is to read the summaries of the company's recent documents and generate a brilliant, highly structured "Executive Insight Report" in Markdown format.
 Focus on identifying key trends, financial highlights, risks, action items, and strategic insights across all the provided documents. Use headings, bullet points, and bold text to make it extremely scannable and professional.`
-          },
-          {
-            role: 'user',
-            content: `Generate an Executive Insight Report based on these documents:\n\n${contextStr}`
-          }
-        ],
-        temperature: 0.5,
-        max_tokens: 1500,
-      });
+        },
+        {
+          role: 'user',
+          content: `Generate an Executive Insight Report based on these documents:\n\n${contextStr}`
+        }
+      ], 'meta/llama-3.1-70b-instruct');
 
-      return response.data.choices[0].message.content;
+      return response;
     } catch (error) {
       console.error('AI generateExecutiveReport error:', error);
       throw new Error('Failed to generate executive report');
