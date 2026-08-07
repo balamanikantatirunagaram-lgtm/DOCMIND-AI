@@ -16,8 +16,8 @@ export function Login() {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
-    } catch (err) {
-      alert('Login failed');
+    } catch (err: any) {
+      alert('Login failed: ' + (err.response?.data?.error || err.message));
     }
   };
 
@@ -26,8 +26,8 @@ export function Login() {
       const res = await api.post('/auth/google', { credential: credentialResponse.credential });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
-    } catch (err) {
-      alert('Google Login failed');
+    } catch (err: any) {
+      alert('Google Login failed: ' + (err.response?.data?.error || err.message));
     }
   };
 

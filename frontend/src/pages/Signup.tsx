@@ -23,8 +23,8 @@ export function Signup() {
       });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
-    } catch (err) {
-      alert('Signup failed');
+    } catch (err: any) {
+      alert('Signup failed: ' + (err.response?.data?.error || err.message));
     }
   };
 
@@ -33,8 +33,8 @@ export function Signup() {
       const res = await api.post('/auth/google', { credential: credentialResponse.credential });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
-    } catch (err) {
-      alert('Google Signup failed');
+    } catch (err: any) {
+      alert('Google Signup failed: ' + (err.response?.data?.error || err.message));
     }
   };
 
