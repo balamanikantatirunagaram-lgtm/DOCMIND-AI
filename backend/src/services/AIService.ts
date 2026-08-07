@@ -132,12 +132,13 @@ export class AIService {
     }
     
     Ensure document node IDs match the provided document IDs.
+    IMPORTANT: Return pure JSON only. Do not wrap in ```json markdown blocks. Do not add any preamble text.
     
     Documents: ${JSON.stringify(docData, null, 2)}`;
 
     const response = await this.callNvidiaApi([
       { role: 'user', content: prompt }
-    ], 'meta/llama-3.1-8b-instruct');
+    ], 'meta/llama-3.1-70b-instruct');
 
     try {
       const jsonMatch = response.match(/\{[\s\S]*\}/);
