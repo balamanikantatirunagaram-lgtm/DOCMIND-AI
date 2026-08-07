@@ -128,4 +128,23 @@ export class AIController {
       res.status(200).json({ message: 'Chat deleted' });
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   }
+
+  public async generateReport(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      
+      const documents = await prisma.document.findMany({
+        where: { organizationId: req.user.organizationId },
+        select: { title: true, type: true, summary: true }
+      });
+      
+      const reportMarkdown = await aiService.generateExecutiveReport(documents);
+      res.status(200).json({ report: reportMarkdown });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }

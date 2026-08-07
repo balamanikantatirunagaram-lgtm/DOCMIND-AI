@@ -119,7 +119,7 @@ export class AIService {
     Please construct a knowledge graph connecting these documents. 
     1. Identify shared concepts, direct relationships, or contradictions between the documents.
     2. Create nodes for each document (type: "Document") and for key shared concepts/entities (type: "Entity").
-    3. Create links between them. The links must have a "source" (id of node), "target" (id of node), and a short "label" describing the relationship (e.g., "mentions", "contradicts", "billed to", "same author").
+    3. Create links between them. The links must have a "source" (id of node), "target" (id of node), a short "label", and a highly detailed "details" field explaining EXACTLY why they are related, doing deep research based on the text.
     
     Return ONLY a valid JSON object matching this structure:
     {
@@ -127,7 +127,7 @@ export class AIService {
         { "id": "unique-node-id", "name": "Node Label", "type": "Document" | "Entity" }
       ],
       "links": [
-        { "source": "source-node-id", "target": "target-node-id", "label": "relationship description" }
+        { "source": "source-node-id", "target": "target-node-id", "label": "short label", "details": "Detailed 2-3 sentence explanation of how these connect..." }
       ]
     }
     
@@ -152,6 +152,37 @@ export class AIService {
     } catch (e) {
       console.error('Failed to parse AI graph JSON', e);
       return { nodes: [], links: [] };
+    }
+  }
+  public async generateExecutiveReport(documents: { title: string; type: string | null; summary: string | null }[]): Promise<string> {
+    try {
+      if (documents.length === 0) {
+        return "No documents available to generate a report.";
+      }
+
+      let contextStr = documents.map(d => `Document: ${d.title}\nType: ${d.type}\nSummary: ${d.summary}\n---`).join('\n');
+
+      const response = await this.client.post('/chat/completions', {
+        model: 'meta/llama-3.1-70b-instruct',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an elite business analyst. Your job is to read the summaries of the company's recent documents and generate a brilliant, highly structured "Executive Insight Report" in Markdown format.
+Focus on identifying key trends, financial highlights, risks, action items, and strategic insights across all the provided documents. Use headings, bullet points, and bold text to make it extremely scannable and professional.`
+          },
+          {
+            role: 'user',
+            content: `Generate an Executive Insight Report based on these documents:\n\n${contextStr}`
+          }
+        ],
+        temperature: 0.5,
+        max_tokens: 1500,
+      });
+
+      return response.data.choices[0].message.content;
+    } catch (error) {
+      console.error('AI generateExecutiveReport error:', error);
+      throw new Error('Failed to generate executive report');
     }
   }
 }
