@@ -100,6 +100,11 @@ export function AIReport() {
           <h3 className="font-pixel font-bold mb-4 border-b-2 border-border pb-2">Select Documents</h3>
           {loadingDocs ? (
             <div className="flex justify-center p-8"><Loader2 className="animate-spin text-blue-600" /></div>
+          ) : documents.length === 0 ? (
+            <div className="text-center p-6 text-muted text-sm border-2 border-dashed border-border">
+              <FileText className="mx-auto mb-2 opacity-50" size={24} />
+              No documents found. Please upload documents first.
+            </div>
           ) : (
             <div className="space-y-2">
               <Button 
