@@ -138,7 +138,7 @@ export class AIService {
 
     const response = await this.callNvidiaApi([
       { role: 'user', content: prompt }
-    ], 'meta/llama-3.1-70b-instruct');
+    ], 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
 
     try {
       const jsonMatch = response.match(/\{[\s\S]*\}/);
