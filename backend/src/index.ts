@@ -1,4 +1,5 @@
 import express from 'express';
+import https from 'https';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -29,10 +30,22 @@ app.get('/health', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
+
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    
+    // Render Free Tier sleep prevention
+    const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://docmind-ai-vmtb.onrender.com';
+    setInterval(() => {
+      https.get(SELF_URL + '/health', (res) => {
+        console.log(`[Self-Ping] Status: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error('[Self-Ping] Error:', err.message);
+      });
+    }, 14 * 60 * 1000); // Ping every 14 minutes
   });
 }
+
 
 export default app;
