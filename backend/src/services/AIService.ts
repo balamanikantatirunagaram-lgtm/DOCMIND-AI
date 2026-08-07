@@ -172,7 +172,7 @@ Focus on identifying key trends, financial highlights, risks, action items, and 
           role: 'user',
           content: `Generate an Executive Insight Report based on these documents:\n\n${contextStr}`
         }
-      ], 'meta/llama-3.1-70b-instruct');
+      ], 'meta/llama-3.1-8b-instruct');
 
       return response;
     } catch (error) {

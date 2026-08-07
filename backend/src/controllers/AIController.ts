@@ -135,9 +135,15 @@ export class AIController {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
+      const { documentIds } = req.body;
       
+      const whereClause: any = { organizationId: req.user.organizationId };
+      if (documentIds && Array.isArray(documentIds) && documentIds.length > 0) {
+        whereClause.id = { in: documentIds };
+      }
+
       const documents = await prisma.document.findMany({
-        where: { organizationId: req.user.organizationId },
+        where: whereClause,
         select: { title: true, type: true, summary: true }
       });
       

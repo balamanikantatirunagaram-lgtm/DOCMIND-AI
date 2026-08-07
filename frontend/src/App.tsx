@@ -5,6 +5,7 @@ import { Documents } from './pages/Documents';
 import { Folders } from './pages/Folders';
 import { Chat } from './pages/Chat';
 import { KnowledgeGraph } from './pages/KnowledgeGraph';
+import { AIReport } from './pages/AIReport';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { Login } from './pages/Login';
@@ -27,6 +28,7 @@ function App() {
             <Route path="/folders" element={<Folders />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/graph" element={<KnowledgeGraph />} />
+            <Route path="/report" element={<AIReport />} />
           </Route>
         </Routes>
       </BrowserRouter>
