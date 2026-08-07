@@ -2,9 +2,9 @@ import React from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Search, Plus, FileText, Users, Activity, BarChart2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { api } from '../services/api';
+import ReactMarkdown from 'react-markdown';
 
 // Mock data will be replaced by state
 
@@ -14,6 +14,8 @@ export function Dashboard() {
   const [documents, setDocuments] = React.useState<any[]>([]);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [chats, setChats] = React.useState<any[]>([]);
+  const [isGeneratingReport, setIsGeneratingReport] = React.useState(false);
+  const [reportContent, setReportContent] = React.useState<string | null>(null);
   const totalMessages = React.useMemo(() => {
     return chats.reduce((sum, chat) => sum + (chat.messages?.length || 0), 0);
   }, [chats]);
@@ -21,12 +23,21 @@ export function Dashboard() {
   React.useEffect(() => {
     async function loadData() {
       try {
+        const cachedDocs = localStorage.getItem('cached_dashboard_docs');
+        const cachedChats = localStorage.getItem('cached_dashboard_chats');
+        if (cachedDocs) setDocuments(JSON.parse(cachedDocs));
+        if (cachedChats) setChats(JSON.parse(cachedChats));
+
         const [docsRes, chatsRes] = await Promise.all([
           api.get('/documents'),
           api.get('/ai/chats')
         ]);
+        
         setDocuments(docsRes.data || []);
         setChats(chatsRes.data || []);
+        
+        localStorage.setItem('cached_dashboard_docs', JSON.stringify(docsRes.data || []));
+        localStorage.setItem('cached_dashboard_chats', JSON.stringify(chatsRes.data || []));
       } catch (e) {
         console.error('Failed to load dashboard data', e);
       }
@@ -51,6 +62,18 @@ export function Dashboard() {
       navigate('/chat');
     } catch (error) {
       alert('Failed to upload document.');
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    try {
+      const res = await api.post('/ai/report');
+      setReportContent(res.data.report);
+    } catch (e) {
+      alert('Failed to generate executive report.');
+    } finally {
+      setIsGeneratingReport(false);
     }
   };
 
@@ -107,6 +130,14 @@ export function Dashboard() {
             onChange={handleFileChange} 
             className="hidden" 
           />
+          <Button onClick={handleGenerateReport} disabled={isGeneratingReport} variant="outline" className="flex items-center gap-2">
+            {isGeneratingReport ? (
+              <span className="animate-spin border-2 border-black border-t-transparent rounded-full w-4 h-4 inline-block"></span>
+            ) : (
+              <FileText size={16} />
+            )}
+            {isGeneratingReport ? 'Analyzing...' : 'AI Report'}
+          </Button>
           <Button onClick={handleUploadClick} className="flex items-center gap-2">
             <Plus size={16} /> Upload Document
           </Button>
@@ -233,6 +264,23 @@ export function Dashboard() {
           </div>
         </Card>
       </div>
+
+      {/* AI Report Modal */}
+      {reportContent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-4xl w-full max-h-[85vh] flex flex-col p-0 overflow-hidden shadow-[8px_8px_0px_0px_#111]">
+            <div className="p-4 border-b-2 border-border flex justify-between items-center bg-blue-50">
+              <h2 className="text-xl font-bold font-pixel">Executive Insight Report</h2>
+              <Button variant="outline" onClick={() => setReportContent(null)} className="px-3 py-1 text-sm">
+                Close
+              </Button>
+            </div>
+            <div className="p-6 overflow-y-auto prose max-w-none prose-sm sm:prose-base font-sans leading-relaxed">
+              <ReactMarkdown>{reportContent}</ReactMarkdown>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

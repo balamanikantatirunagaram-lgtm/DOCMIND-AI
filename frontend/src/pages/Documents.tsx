@@ -45,8 +45,15 @@ export function Documents() {
 
   const fetchDocuments = async () => {
     try {
+      const cached = localStorage.getItem('cached_documents');
+      if (cached) {
+        setDocuments(JSON.parse(cached));
+        setIsLoading(false); // Instantly show cached data while refreshing
+      }
+      
       const res = await api.get('/documents');
       setDocuments(res.data);
+      localStorage.setItem('cached_documents', JSON.stringify(res.data));
     } catch (error) {
       console.error('Failed to fetch documents', error);
     } finally {
