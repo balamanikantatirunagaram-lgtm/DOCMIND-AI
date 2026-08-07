@@ -2,6 +2,7 @@ import React from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Search, Plus, FileText, Users, Activity, BarChart2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { api } from '../services/api';
 import ReactMarkdown from 'react-markdown';
