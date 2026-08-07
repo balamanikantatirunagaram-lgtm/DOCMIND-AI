@@ -3,6 +3,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Send, Bot, User, Paperclip, Plus, MessageSquare, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -196,7 +197,9 @@ export function Chat() {
                   {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                 </div>
                 <div className={`max-w-[80%] p-4 border border-border shadow-[2px_2px_0px_0px_#111] bg-white`}>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap font-sans">{msg.content}</p>
+                  <ReactMarkdown className="prose prose-sm max-w-none prose-p:leading-snug prose-pre:bg-gray-100 prose-pre:text-gray-900 font-sans">
+                    {msg.content}
+                  </ReactMarkdown>
                 </div>
               </div>
             ))}
