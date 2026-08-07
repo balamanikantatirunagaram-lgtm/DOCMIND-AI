@@ -8,32 +8,43 @@ import { GoogleLogin } from '@react-oauth/google';
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err: any) {
       alert('Login failed: ' + (err.response?.data?.error || err.message));
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
+    setIsLoading(true);
     try {
       const res = await api.post('/auth/google', { credential: credentialResponse.credential });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err: any) {
       alert('Google Login failed: ' + (err.response?.data?.error || err.message));
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen bg-background items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex h-screen bg-background items-center justify-center p-4 relative">
+      <Card className="w-full max-w-md relative">
+        {isLoading && (
+          <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center font-pixel font-bold text-lg border-2 border-border">
+            <div className="animate-spin mb-4 border-4 border-black border-t-transparent rounded-full w-8 h-8"></div>
+            Authenticating...
+          </div>
+        )}
         <h1 className="text-3xl font-pixel font-bold mb-6 text-center">DOCMIND<span className="text-blue-600">.AI</span></h1>
         
         <div className="flex justify-center mb-6 mt-8">
