@@ -3,6 +3,8 @@ import { StorageService } from './StorageService';
 import { AIService } from './AIService';
 const pdfParse = require('pdf-parse');
 const { pdfToPng } = require('pdf-to-png-converter');
+const mammoth = require('mammoth');
+const xlsx = require('xlsx');
 const storageService = new StorageService();
 const aiService = new AIService();
 
@@ -50,6 +52,19 @@ export class DocumentService {
       ) {
         // Handle code and text files directly
         extractedText = file.buffer.toString('utf-8');
+      } else if (file.originalname.match(/\.docx?$/i) || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        // Handle Word Documents
+        const result = await mammoth.extractRawText({ buffer: file.buffer });
+        extractedText = result.value;
+      } else if (file.originalname.match(/\.xlsx?$/i) || file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        // Handle Excel Spreadsheets
+        const workbook = xlsx.read(file.buffer, { type: 'buffer' });
+        let csvText = '';
+        workbook.SheetNames.forEach((sheetName: string) => {
+          csvText += `\n--- Sheet: ${sheetName} ---\n`;
+          csvText += xlsx.utils.sheet_to_csv(workbook.Sheets[sheetName]);
+        });
+        extractedText = csvText;
       } else {
         // Fallback for unsupported binary files
         extractedText = `[File uploaded: ${file.originalname}, but text extraction is not supported for this file type]`;
