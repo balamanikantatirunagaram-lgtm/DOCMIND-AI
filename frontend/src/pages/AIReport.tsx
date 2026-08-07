@@ -3,7 +3,9 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { api } from '../services/api';
 import ReactMarkdown from 'react-markdown';
-import { Loader2, FileText, CheckSquare, Square } from 'lucide-react';
+import { Loader2, FileText, CheckSquare, Square, Download } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
+import { useRef } from 'react';
 
 export function AIReport() {
   const [documents, setDocuments] = useState<any[]>([]);
@@ -11,6 +13,7 @@ export function AIReport() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportContent, setReportContent] = useState<string | null>(null);
   const [loadingDocs, setLoadingDocs] = useState(true);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -58,6 +61,20 @@ export function AIReport() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!reportRef.current) return;
+    
+    const opt = {
+      margin:       10,
+      filename:     'AI-Executive-Report.pdf',
+      image:        { type: 'jpeg' as 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(reportRef.current).save();
   };
 
   return (
@@ -113,7 +130,15 @@ export function AIReport() {
           )}
         </Card>
 
-        <Card className="lg:col-span-2 min-h-[50vh]">
+        <Card className="lg:col-span-2 min-h-[50vh] flex flex-col relative">
+          {reportContent && (
+            <div className="absolute top-4 right-4 z-10">
+              <Button onClick={handleDownloadPDF} variant="outline" className="flex items-center gap-2">
+                <Download size={16} /> Download PDF
+              </Button>
+            </div>
+          )}
+          
           {isGenerating ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 py-20">
               <Loader2 size={48} className="animate-spin mb-4 text-blue-600" />
@@ -121,7 +146,7 @@ export function AIReport() {
               <p className="text-sm mt-2">This usually takes less than 30 seconds.</p>
             </div>
           ) : reportContent ? (
-            <div className="prose max-w-none prose-sm sm:prose-base font-sans leading-relaxed">
+            <div className="prose max-w-none prose-sm sm:prose-base font-sans leading-relaxed pt-12" ref={reportRef}>
               <ReactMarkdown>{reportContent}</ReactMarkdown>
             </div>
           ) : (
