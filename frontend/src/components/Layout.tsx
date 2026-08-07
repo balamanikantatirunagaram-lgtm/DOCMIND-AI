@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, MessageSquare, LogOut, ChevronLeft, ChevronRight, Settings, X, Palette, Bell, Shield, User, Folder, Network } from 'lucide-react';
+import { LayoutDashboard, FileText, MessageSquare, LogOut, ChevronLeft, ChevronRight, Settings, X, Palette, Bell, Shield, User, Folder, Network, Menu } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -9,6 +9,7 @@ export function Layout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [userPayload, setUserPayload] = useState<any>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -42,7 +43,8 @@ export function Layout() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "border-r-4 border-border bg-card flex flex-col transition-all duration-300",
+          "fixed inset-y-0 left-0 z-40 transform md:relative md:translate-x-0 border-r-4 border-border bg-card flex flex-col transition-all duration-300",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
           isSidebarCollapsed ? "w-20" : "w-64"
         )}
       >
@@ -76,6 +78,7 @@ export function Layout() {
                   isSidebarCollapsed && "justify-center px-0"
                 )}
                 title={isSidebarCollapsed ? item.name : undefined}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Icon size={20} className={isSidebarCollapsed ? "mx-auto" : ""} />
                 {!isSidebarCollapsed && item.name}
@@ -103,6 +106,14 @@ export function Layout() {
           )}
         </div>
       </aside>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Settings Modal */}
       {isSettingsOpen && (
@@ -180,7 +191,13 @@ export function Layout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
-        <header className="h-20 border-b-4 border-border bg-card flex items-center px-6">
+        <header className="h-20 border-b-4 border-border bg-card flex items-center px-4 md:px-6 shrink-0">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-2 hover:bg-gray-100 border-2 border-transparent hover:border-border transition-all rounded-sm mr-4"
+          >
+            <Menu size={24} />
+          </button>
           <div className="flex-1" />
           {/* Header actions (optional) */}
         </header>
